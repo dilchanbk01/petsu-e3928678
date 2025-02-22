@@ -12,6 +12,7 @@ import CreateEvent from "@/pages/CreateEvent"
 import VetDashboard from "@/pages/VetDashboard"
 import VetOnboarding from "@/pages/VetOnboarding"
 import AdminDashboard from "@/pages/AdminDashboard"
+import AdminAuth from "@/pages/AdminAuth"
 import Auth from "@/pages/Auth"
 import NotFound from "@/pages/NotFound"
 import { AuthProvider, useAuth } from "@/components/AuthProvider"
@@ -82,6 +83,7 @@ const AppRoutes = () => (
   <AnimatePresence mode="wait">
     <Routes>
       <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/admin-auth" element={<PageTransition><AdminAuth /></PageTransition>} />
       <Route
         path="/"
         element={
