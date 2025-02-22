@@ -12,23 +12,24 @@ interface NavCardProps {
 const NavCard = ({ title, imagePath, to }: NavCardProps) => (
   <Link to={to}>
     <motion.div
-      className="nav-card"
+      className="bg-white rounded-[32px] p-8 shadow-sm hover:shadow-md transition-all duration-300"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="nav-card-title text-lg font-semibold">
-        {title} <ArrowRight className="w-4 h-4" />
+      <div className="flex items-center justify-between mb-12">
+        <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+        <ArrowRight className="w-6 h-6 text-gray-400" />
       </div>
-      <div className="flex items-center justify-center p-2">
+      <div className="flex items-center justify-center">
         <img 
           src={imagePath} 
           alt={title} 
-          className="w-32 h-32 object-contain"
+          className="w-48 h-48 object-contain"
           loading="lazy"
-          width={128}
-          height={128}
+          width={192}
+          height={192}
         />
       </div>
     </motion.div>
