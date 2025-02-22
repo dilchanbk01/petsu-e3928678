@@ -31,22 +31,28 @@ const ProfileMenu = () => {
   const userName = "John Doe"; // This could be fetched from your auth state
 
   return (
-    <div className="absolute top-4 right-4">
+    <div className="absolute top-6 right-6">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2 text-petsu-blue hover:text-petsu-yellow">
-            <UserCircle className="w-6 h-6" />
-            <span>{userName}</span>
+          <Button 
+            variant="outline" 
+            className="bg-white/90 backdrop-blur-sm border-2 border-petsu-blue rounded-full px-6 py-2 hover:bg-petsu-yellow/20 transition-all duration-300"
+          >
+            <UserCircle className="w-6 h-6 text-petsu-blue" />
+            <span className="ml-2 font-semibold text-petsu-blue">{userName}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-56 p-2 bg-white/95 backdrop-blur-sm border-2 border-petsu-blue rounded-xl shadow-lg"
+        >
+          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
             Profile Settings
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
             My Tickets
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
