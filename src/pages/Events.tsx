@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter, Ticket } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
@@ -573,7 +573,7 @@ const Events = () => {
                 whileHover={cartItems.length > 0 ? { scale: 1.02 } : {}}
                 initial={false}
               >
-                <ShoppingCart className="w-4 h-4" />
+                <Ticket className="w-4 h-4" />
                 {cartItems.length > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{totalItems} items</span>
