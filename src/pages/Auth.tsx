@@ -1,14 +1,32 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    const handleAuthRedirect = async () => {
+      // Check if there's an access_token in the URL (OAuth redirect)
+      const refreshToken = searchParams.get('refresh_token');
+      const accessToken = searchParams.get('access_token');
+      
+      if (refreshToken || accessToken) {
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session error:', error);
+          toast.error("Authentication failed");
+        }
+      }
+    };
+
+    // Handle OAuth redirect
+    handleAuthRedirect();
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -24,7 +42,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -33,6 +51,7 @@ const Auth = () => {
         options: {
           redirectTo: `${window.location.origin}/auth`,
           scopes: 'email profile',
+          skipBrowserRedirect: false
         }
       });
       
