@@ -50,14 +50,12 @@ const ProfileMenu = () => {
   );
 };
 
-const LoadingCard = () => {
-  return (
-    <div className="nav-card animate-pulse">
-      <div className="h-8 bg-petsu-blue/10 rounded mb-4"></div>
-      <div className="h-32 bg-petsu-blue/10 rounded"></div>
-    </div>
-  );
-};
+const LoadingCard = () => (
+  <div className="nav-card animate-pulse">
+    <div className="h-8 bg-petsu-blue/10 rounded mb-4"></div>
+    <div className="h-32 bg-petsu-blue/10 rounded"></div>
+  </div>
+);
 
 const Index = () => {
   return (
@@ -84,10 +82,9 @@ const Index = () => {
             <div className="h-[200px]">
               <Suspense fallback={<LoadingCard />}>
                 <NavCard 
-                  title="Pet Essentials" 
-                  to="https://supertails.com/"
-                  imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-                  external
+                  title="Events" 
+                  to="/events"
+                  imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
                 />
               </Suspense>
             </div>
@@ -104,9 +101,10 @@ const Index = () => {
           <div className="h-[160px]">
             <Suspense fallback={<LoadingCard />}>
               <NavCard 
-                title="Events" 
-                to="/events"
-                imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
+                title="Pet Essentials" 
+                to="https://supertails.com/"
+                imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+                external
               />
             </Suspense>
           </div>
@@ -116,10 +114,9 @@ const Index = () => {
         <div className="hidden md:grid md:grid-cols-3 gap-6">
           <Suspense fallback={<LoadingCard />}>
             <NavCard 
-              title="Pet Essentials" 
-              to="https://supertails.com/"
-              imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-              external
+              title="Events" 
+              to="/events"
+              imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
             />
           </Suspense>
           <Suspense fallback={<LoadingCard />}>
@@ -131,9 +128,10 @@ const Index = () => {
           </Suspense>
           <Suspense fallback={<LoadingCard />}>
             <NavCard 
-              title="Events" 
-              to="/events"
-              imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
+              title="Pet Essentials" 
+              to="https://supertails.com/"
+              imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+              external
             />
           </Suspense>
         </div>
