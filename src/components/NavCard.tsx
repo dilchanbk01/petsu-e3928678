@@ -19,10 +19,10 @@ const NavCard = ({ title, imagePath, to, external }: NavCardProps) => {
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="nav-card-title text-lg font-semibold">
+      <div className="nav-card-title text-lg font-semibold mb-0">
         {title} <ArrowRight className="w-4 h-4" />
       </div>
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center pt-1">
         <img 
           src={imagePath} 
           alt={title} 
