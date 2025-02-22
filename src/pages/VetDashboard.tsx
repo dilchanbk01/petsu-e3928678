@@ -1,181 +1,199 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Calendar,
-  Users,
-  MessageSquare,
-  Video,
-  Clock,
-  Settings,
-  LogOut
-} from "lucide-react";
+import { Calendar, Clock, User, Video, MessageSquare, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Appointment } from "@/types/vet";
+import { useQuery } from "@tanstack/react-query";
 
-interface Appointment {
-  id: number;
-  patientName: string;
-  time: string;
-  type: "scheduled" | "immediate";
-  status: "pending" | "completed" | "cancelled";
-}
+const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
 
-const mockAppointments: Appointment[] = [
-  {
-    id: 1,
-    patientName: "John's Dog Max",
-    time: "10:00 AM",
-    type: "scheduled",
-    status: "pending"
-  },
-  {
-    id: 2,
-    patientName: "Sarah's Cat Luna",
-    time: "11:30 AM",
-    type: "immediate",
-    status: "pending"
-  }
-];
+  const handleUpdateStatus = async (newStatus: 'confirmed' | 'cancelled' | 'completed') => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: newStatus })
+        .eq('id', appointment.id);
 
-const VetDashboard = () => {
-  const [isOnline, setIsOnline] = useState(false);
-
-  const handleToggleStatus = () => {
-    setIsOnline(!isOnline);
-    toast.success(`Status updated to ${!isOnline ? 'Online' : 'Offline'}`);
+      if (error) throw error;
+      toast.success(`Appointment ${newStatus} successfully`);
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+      toast.error("Failed to update appointment status");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <motion.div 
-          className="w-64 bg-white h-screen shadow-lg p-6 flex flex-col"
-          initial={{ x: -100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-        >
-          <div className="flex items-center gap-4 mb-8">
-            <img
-              src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d"
-              alt="Vet profile"
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            <div>
-              <h3 className="font-semibold">Dr. Michael Chen</h3>
-              <p className="text-sm text-gray-500">Veterinarian</p>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-xl shadow-md p-6 border border-gray-100"
+    >
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-petsu-blue" />
+            <span className="font-medium">
+              {new Date(appointment.appointment_time).toLocaleString()}
+            </span>
           </div>
-
-          <nav className="flex-1">
-            <Button 
-              variant="ghost"
-              className="w-full justify-start mb-2"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Appointments
-            </Button>
-            <Button 
-              variant="ghost"
-              className="w-full justify-start mb-2"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Patients
-            </Button>
-            <Button 
-              variant="ghost"
-              className="w-full justify-start mb-2"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Messages
-            </Button>
-            <Button 
-              variant="ghost"
-              className="w-full justify-start mb-2"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
-          </nav>
-
-          <Button 
-            variant="ghost"
-            className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </motion.div>
-
-        <div className="flex-1 p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <Button
-                onClick={handleToggleStatus}
-                className={`${
-                  isOnline 
-                    ? 'bg-green-500 hover:bg-green-600' 
-                    : 'bg-gray-500 hover:bg-gray-600'
-                } text-white`}
-              >
-                {isOnline ? 'Online' : 'Offline'}
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <h3 className="text-gray-500 mb-2">Today's Appointments</h3>
-                <p className="text-3xl font-bold">8</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <h3 className="text-gray-500 mb-2">Pending Requests</h3>
-                <p className="text-3xl font-bold">3</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <h3 className="text-gray-500 mb-2">Total Patients</h3>
-                <p className="text-3xl font-bold">127</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
-              <div className="space-y-4">
-                {mockAppointments.map((appointment) => (
-                  <div 
-                    key={appointment.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-lg ${
-                        appointment.type === 'immediate' ? 'bg-red-100' : 'bg-blue-100'
-                      }`}>
-                        {appointment.type === 'immediate' ? (
-                          <Clock className="w-5 h-5 text-red-600" />
-                        ) : (
-                          <Calendar className="w-5 h-5 text-blue-600" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{appointment.patientName}</h4>
-                        <p className="text-sm text-gray-500">{appointment.time}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm">
-                        <Video className="w-4 h-4 mr-2" />
-                        Start Call
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Message
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <span>Patient ID: {appointment.user_id.slice(0, 8)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {appointment.session_type === 'video' ? (
+              <Video className="w-4 h-4 text-gray-500" />
+            ) : (
+              <MessageSquare className="w-4 h-4 text-gray-500" />
+            )}
+            <span className="capitalize">{appointment.session_type} Consultation</span>
           </div>
         </div>
+
+        <div className="flex flex-col items-end gap-2">
+          <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+            appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+            appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+            appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+            'bg-blue-100 text-blue-800'
+          }`}>
+            {appointment.status}
+          </span>
+          <span className="font-bold text-petsu-blue">${appointment.amount}</span>
+        </div>
       </div>
+
+      {appointment.status === 'pending' && (
+        <div className="mt-4 flex gap-2">
+          <Button
+            onClick={() => handleUpdateStatus('confirmed')}
+            disabled={isUpdating}
+            className="flex-1 bg-green-500 hover:bg-green-600"
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Confirm
+          </Button>
+          <Button
+            onClick={() => handleUpdateStatus('cancelled')}
+            disabled={isUpdating}
+            variant="outline"
+            className="flex-1 border-red-500 text-red-500 hover:bg-red-50"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Cancel
+          </Button>
+        </div>
+      )}
+
+      {appointment.status === 'confirmed' && (
+        <div className="mt-4">
+          <Button
+            onClick={() => handleUpdateStatus('completed')}
+            disabled={isUpdating}
+            className="w-full bg-petsu-blue hover:bg-petsu-blue/90"
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Mark as Completed
+          </Button>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+const VetDashboard = () => {
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all');
+
+  const fetchAppointments = async () => {
+    const { data: vetData, error: vetError } = await supabase
+      .from('vets')
+      .select('id')
+      .single();
+
+    if (vetError) throw vetError;
+
+    const { data: appointments, error: appointmentsError } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('vet_id', vetData.id)
+      .order('appointment_time', { ascending: true });
+
+    if (appointmentsError) throw appointmentsError;
+    return appointments;
+  };
+
+  const { data: appointments = [], isLoading } = useQuery({
+    queryKey: ['vet-appointments'],
+    queryFn: fetchAppointments
+  });
+
+  const filteredAppointments = appointments.filter(appointment => 
+    filter === 'all' ? true : appointment.status === filter
+  );
+
+  useEffect(() => {
+    const channel = supabase.channel('appointments')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'appointments' },
+        (payload) => {
+          console.log('Appointment update:', payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen p-6 md:p-8">
+      <motion.h1 
+        className="text-2xl font-bold text-petsu-yellow mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        Vet Dashboard
+      </motion.h1>
+
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+        {(['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const).map((status) => (
+          <Button
+            key={status}
+            variant={filter === status ? "default" : "outline"}
+            onClick={() => setFilter(status)}
+            className={`capitalize ${
+              filter === status 
+                ? 'bg-petsu-blue hover:bg-petsu-blue/90' 
+                : 'hover:bg-gray-50'
+            }`}
+          >
+            {status}
+          </Button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-8">Loading appointments...</div>
+      ) : filteredAppointments.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No {filter === 'all' ? '' : filter} appointments found
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredAppointments.map((appointment) => (
+            <AppointmentCard key={appointment.id} appointment={appointment} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

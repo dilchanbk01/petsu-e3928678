@@ -11,6 +11,8 @@ import FindVets from "./pages/FindVets";
 import PetEssentials from "./pages/PetEssentials";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import VetDashboard from "./pages/VetDashboard";
+import VetOnboarding from "./pages/VetOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/find-vets" element={<FindVets />} />
           <Route path="/pet-essentials" element={<PetEssentials />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/vet-dashboard" element={<VetDashboard />} />
+          <Route path="/vet-onboarding" element={<VetOnboarding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
