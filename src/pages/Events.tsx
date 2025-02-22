@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,6 +14,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Event {
   id: string;
@@ -71,6 +80,87 @@ const sampleEvents: Event[] = [
     availableTickets: 100
   }
 ];
+
+const FilterBar = ({ 
+  onFilterChange 
+}: { 
+  onFilterChange: (filters: { searchTerm: string; dateFilter: string; showFreeOnly: boolean }) => void 
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [showFreeOnly, setShowFreeOnly] = useState(false);
+
+  const handleChange = (
+    type: "search" | "date" | "free",
+    value: string | boolean
+  ) => {
+    let newSearchTerm = searchTerm;
+    let newDateFilter = dateFilter;
+    let newShowFreeOnly = showFreeOnly;
+
+    switch (type) {
+      case "search":
+        newSearchTerm = value as string;
+        setSearchTerm(newSearchTerm);
+        break;
+      case "date":
+        newDateFilter = value as string;
+        setDateFilter(newDateFilter);
+        break;
+      case "free":
+        newShowFreeOnly = value as boolean;
+        setShowFreeOnly(newShowFreeOnly);
+        break;
+    }
+
+    onFilterChange({
+      searchTerm: newSearchTerm,
+      dateFilter: newDateFilter,
+      showFreeOnly: newShowFreeOnly,
+    });
+  };
+
+  return (
+    <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
+        <input
+          type="text"
+          placeholder="Search events..."
+          value={searchTerm}
+          onChange={(e) => handleChange("search", e.target.value)}
+          className="w-full pl-9 pr-4 py-2 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
+        />
+      </div>
+      
+      <div className="flex gap-4">
+        <Select
+          value={dateFilter}
+          onValueChange={(value) => handleChange("date", value)}
+        >
+          <SelectTrigger className="w-[180px] rounded-full border-2 border-petsu-blue">
+            <SelectValue placeholder="Filter by date" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All dates</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="week">This week</SelectItem>
+            <SelectItem value="month">This month</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="flex items-center gap-2">
+          <Switch
+            id="free-events"
+            checked={showFreeOnly}
+            onCheckedChange={(checked) => handleChange("free", checked)}
+          />
+          <Label htmlFor="free-events">Free events only</Label>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
   const [quantity, setQuantity] = useState(1);
@@ -220,7 +310,11 @@ const Events = () => {
   });
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    dateFilter: "all",
+    showFreeOnly: false,
+  });
 
   const handleRegister = (event: Event, quantity: number) => {
     if (event.availableTickets !== undefined) {
@@ -287,10 +381,37 @@ const Events = () => {
     }
   };
 
-  const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = 
+      event.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      event.description.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      event.location.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    const matchesPrice = !filters.showFreeOnly || event.price === 0;
+
+    let matchesDate = true;
+    const eventDate = new Date(event.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (filters.dateFilter) {
+      case "today":
+        matchesDate = eventDate.toDateString() === today.toDateString();
+        break;
+      case "week":
+        const weekFromNow = new Date(today);
+        weekFromNow.setDate(weekFromNow.getDate() + 7);
+        matchesDate = eventDate >= today && eventDate <= weekFromNow;
+        break;
+      case "month":
+        const monthFromNow = new Date(today);
+        monthFromNow.setMonth(monthFromNow.getMonth() + 1);
+        matchesDate = eventDate >= today && eventDate <= monthFromNow;
+        break;
+    }
+
+    return matchesSearch && matchesPrice && matchesDate;
+  });
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -306,24 +427,12 @@ const Events = () => {
             <ArrowLeft className="w-5 h-5 text-petsu-blue" />
           </motion.div>
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="relative w-48">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
-            />
-          </div>
-          <Link to="/create-event">
-            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-              <Plus className="w-4 h-4" />
-              <span className="text-sm">Create Event</span>
-            </button>
-          </Link>
-        </div>
+        <Link to="/create-event">
+          <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" />
+            <span className="text-sm">Create Event</span>
+          </button>
+        </Link>
       </div>
 
       <motion.h1 
@@ -334,15 +443,27 @@ const Events = () => {
         Upcoming Pet Events
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {filteredEvents.map((event) => (
-          <EventCard 
-            key={event.id} 
-            event={event} 
-            onRegister={handleRegister}
-          />
-        ))}
-      </div>
+      <FilterBar onFilterChange={setFilters} />
+
+      {filteredEvents.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12"
+        >
+          <p className="text-petsu-blue text-lg">No events found matching your filters.</p>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {filteredEvents.map((event) => (
+            <EventCard 
+              key={event.id} 
+              event={event} 
+              onRegister={handleRegister}
+            />
+          ))}
+        </div>
+      )}
 
       <Sheet>
         <SheetTrigger asChild>
