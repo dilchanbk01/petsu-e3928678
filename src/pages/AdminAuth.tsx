@@ -18,63 +18,72 @@ const AdminAuth = () => {
     password: "AdminPetsu2024!",
   });
 
-  const createAdminUser = async () => {
-    const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-    });
-
-    if (signUpError) {
-      // If user already exists, try to sign in
-      if (signUpError.message.includes("already registered")) {
-        return await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-      }
-      throw signUpError;
-    }
-
-    // If we successfully created the user, insert them into admin_users
-    if (user) {
-      const { error: adminError } = await supabase
-        .from('admin_users')
-        .insert([{ id: user.id }]);
-
-      if (adminError) throw adminError;
-    }
-
-    return { data: { user }, error: null };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data: { user }, error } = await createAdminUser();
+      // Try to sign in first
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      if (error) throw error;
+      // If sign in fails because user doesn't exist, create the user
+      if (signInError && signInError.message.includes("Invalid login credentials")) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      if (!user) {
-        toast.error("Invalid credentials");
-        return;
+        if (signUpError) throw signUpError;
+
+        // After successful signup, try to create admin user
+        if (signUpData.user) {
+          const { error: adminError } = await supabase
+            .from('admin_users')
+            .insert([{ id: signUpData.user.id }]);
+
+          if (adminError) throw adminError;
+          
+          // Sign in after successful signup
+          const { data: newSignInData, error: newSignInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+
+          if (newSignInError) throw newSignInError;
+          
+          toast.success("Admin account created and logged in successfully!");
+          navigate('/admin');
+          return;
+        }
       }
 
-      // Check if user is admin
-      const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      if (signInError) throw signInError;
 
-      if (!adminData) {
-        toast.error("Unauthorized access");
-        return;
+      // For existing users, verify admin status
+      if (signInData.user) {
+        const { data: adminData, error: adminCheckError } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('id', signInData.user.id)
+          .maybeSingle();
+
+        if (adminCheckError) throw adminCheckError;
+
+        if (!adminData) {
+          // If not an admin, try to create admin entry
+          const { error: adminCreateError } = await supabase
+            .from('admin_users')
+            .insert([{ id: signInData.user.id }]);
+
+          if (adminCreateError) throw adminCreateError;
+        }
+
+        toast.success("Welcome back, admin!");
+        navigate('/admin');
       }
-
-      toast.success("Welcome back, admin!");
-      navigate('/admin');
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
     } finally {
@@ -175,4 +184,3 @@ const AdminAuth = () => {
 };
 
 export default AdminAuth;
-
