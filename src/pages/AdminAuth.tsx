@@ -23,66 +23,27 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // Try to sign in first
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      // If sign in fails because user doesn't exist, create the user
-      if (signInError && signInError.message.includes("Invalid login credentials")) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        });
+      if (error) throw error;
 
-        if (signUpError) throw signUpError;
-
-        // After successful signup, try to create admin user
-        if (signUpData.user) {
-          const { error: adminError } = await supabase
-            .from('admin_users')
-            .insert([{ id: signUpData.user.id }]);
-
-          if (adminError) throw adminError;
-          
-          // Sign in after successful signup
-          const { data: newSignInData, error: newSignInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-
-          if (newSignInError) throw newSignInError;
-          
-          toast.success("Admin account created and logged in successfully!");
-          navigate('/admin');
-          return;
-        }
-      }
-
-      if (signInError) throw signInError;
-
-      // For existing users, verify admin status
-      if (signInData.user) {
-        const { data: adminData, error: adminCheckError } = await supabase
+      if (data.user) {
+        const { data: adminData } = await supabase
           .from('admin_users')
-          .select('*')
-          .eq('id', signInData.user.id)
-          .maybeSingle();
+          .select('id')
+          .eq('id', data.user.id)
+          .single();
 
-        if (adminCheckError) throw adminCheckError;
-
-        if (!adminData) {
-          // If not an admin, try to create admin entry
-          const { error: adminCreateError } = await supabase
-            .from('admin_users')
-            .insert([{ id: signInData.user.id }]);
-
-          if (adminCreateError) throw adminCreateError;
+        if (adminData) {
+          toast.success("Welcome back, admin!");
+          navigate('/admin');
+        } else {
+          toast.error("Unauthorized access");
+          await supabase.auth.signOut();
         }
-
-        toast.success("Welcome back, admin!");
-        navigate('/admin');
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
