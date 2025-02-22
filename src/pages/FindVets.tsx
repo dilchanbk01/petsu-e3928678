@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -137,7 +136,6 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
       className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
       <div className="relative p-6">
-        {/* Top section with image */}
         <div className="flex items-start space-x-4">
           <div className="relative">
             <img
@@ -182,7 +180,6 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
           </div>
         </div>
 
-        {/* Consultation Fee */}
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Consultation Fee</span>
@@ -190,7 +187,6 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
           </div>
         </div>
 
-        {/* Booking Section */}
         {!isBooked ? (
           <div className="mt-4">
             {vet.availability.is_online ? (
@@ -330,7 +326,6 @@ const FindVets = () => {
         { event: '*', schema: 'public', table: 'vet_availability' },
         (payload) => {
           console.log('Realtime update:', payload);
-          // The query will automatically refetch when the data changes
         }
       )
       .subscribe();
@@ -341,50 +336,45 @@ const FindVets = () => {
   }, []);
 
   return (
-    <div className="min-h-screen p-8">
-      <Link to="/">
-        <motion.div
-          className="flex items-center text-petsu-yellow mb-8 hover:text-petsu-blue transition-colors"
-          whileHover={{ x: -5 }}
-        >
-          <ArrowLeft className="w-6 h-6 mr-2" />
-          <span className="text-xl font-semibold">Back to Home</span>
-        </motion.div>
-      </Link>
-      
+    <div className="min-h-screen p-6 md:p-8">
+      <div className="flex justify-between items-center mb-8">
+        <Link to="/">
+          <motion.div
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
+            whileHover={{ x: -5 }}
+          >
+            <ArrowLeft className="w-5 h-5 text-petsu-blue" />
+          </motion.div>
+        </Link>
+        <div className="flex items-center gap-3">
+          <div className="relative w-48">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
+            />
+          </div>
+        </div>
+      </div>
+
       <motion.h1 
-        className="text-4xl font-bold text-petsu-yellow mb-8"
+        className="text-2xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         Online Vet Consultation
       </motion.h1>
-      
-      <motion.div 
-        className="max-w-4xl mx-auto"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="bg-white rounded-2xl p-6 mb-8 shadow-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input
-              placeholder="Search for veterinarians by name or specialty..."
-              className="pl-10 border-gray-200"
-            />
-          </div>
-        </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {isLoading ? (
           <div className="text-center py-8">Loading vets...</div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            {vets.map((vet) => (
-              <VetCard key={vet.id} vet={vet} />
-            ))}
-          </div>
+          vets.map((vet) => (
+            <VetCard key={vet.id} vet={vet} />
+          ))
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };
