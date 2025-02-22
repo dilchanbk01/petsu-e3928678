@@ -30,21 +30,6 @@ export type Database = {
         }
         Relationships: []
       }
-      admin_users: {
-        Row: {
-          created_at: string
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-        }
-        Relationships: []
-      }
       appointments: {
         Row: {
           amount: number
@@ -304,7 +289,7 @@ export type Database = {
       }
     }
     Enums: {
-      admin_role: "super_admin" | "event_admin" | "vet_admin"
+      admin_role: "admin" | "superadmin"
     }
     CompositeTypes: {
       [_ in never]: never
