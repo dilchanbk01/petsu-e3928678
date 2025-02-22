@@ -297,7 +297,7 @@ const Events = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8">
-      <div className="flex justify-between items-center mb-10">
+      <div className="flex justify-between items-center mb-8">
         <Link to="/">
           <motion.div
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
@@ -327,7 +327,7 @@ const Events = () => {
       </div>
 
       <motion.h1 
-        className="text-4xl font-bold text-petsu-yellow mb-10"
+        className="text-2xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
