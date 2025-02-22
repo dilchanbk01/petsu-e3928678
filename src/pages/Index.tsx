@@ -84,7 +84,7 @@ const Index = () => {
                 <NavCard 
                   title="Events" 
                   to="/events"
-                  imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
+                  imagePath="/lovable-uploads/a6a449a5-6229-468c-b139-1e521c756165.png"
                 />
               </Suspense>
             </div>
@@ -102,9 +102,8 @@ const Index = () => {
             <Suspense fallback={<LoadingCard />}>
               <NavCard 
                 title="Pet Essentials" 
-                to="https://supertails.com/"
+                to="/pet-essentials"
                 imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-                external
               />
             </Suspense>
           </div>
@@ -116,7 +115,7 @@ const Index = () => {
             <NavCard 
               title="Events" 
               to="/events"
-              imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
+              imagePath="/lovable-uploads/a6a449a5-6229-468c-b139-1e521c756165.png"
             />
           </Suspense>
           <Suspense fallback={<LoadingCard />}>
@@ -129,9 +128,8 @@ const Index = () => {
           <Suspense fallback={<LoadingCard />}>
             <NavCard 
               title="Pet Essentials" 
-              to="https://supertails.com/"
+              to="/pet-essentials"
               imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-              external
             />
           </Suspense>
         </div>
