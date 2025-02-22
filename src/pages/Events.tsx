@@ -300,28 +300,27 @@ const Events = () => {
       <div className="flex justify-between items-center mb-8">
         <Link to="/">
           <motion.div
-            className="flex items-center text-petsu-yellow hover:text-petsu-blue transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
             whileHover={{ x: -5 }}
           >
-            <ArrowLeft className="w-6 h-6 mr-2" />
-            <span className="text-xl font-semibold">Back to Home</span>
+            <ArrowLeft className="w-6 h-6 text-petsu-blue" />
           </motion.div>
         </Link>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue w-5 h-5" />
+        <div className="flex items-center gap-3">
+          <div className="relative w-48">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
+              className="w-full pl-8 pr-3 py-1.5 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
             />
           </div>
           <Link to="/create-event">
-            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-              <Plus className="w-5 h-5" />
-              Create Event
+            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-1.5 rounded-full hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" />
+              <span className="text-sm font-medium">Create Event</span>
             </button>
           </Link>
         </div>
@@ -349,7 +348,7 @@ const Events = () => {
         <SheetTrigger asChild>
           {cartItems.length > 0 && (
             <motion.div 
-              className="fixed bottom-8 right-8 bg-petsu-blue text-white px-6 py-3 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
+              className="fixed left-1/2 bottom-8 -translate-x-1/2 bg-petsu-blue text-white px-6 py-3 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileHover={{ scale: 1.05 }}
