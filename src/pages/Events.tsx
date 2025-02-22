@@ -300,14 +300,14 @@ const Events = () => {
       <div className="flex justify-between items-center mb-10">
         <Link to="/">
           <motion.div
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
             whileHover={{ x: -5 }}
           >
-            <ArrowLeft className="w-6 h-6 text-petsu-blue" />
+            <ArrowLeft className="w-5 h-5 text-petsu-blue" />
           </motion.div>
         </Link>
-        <div className="flex items-center gap-4">
-          <div className="relative w-56">
+        <div className="flex items-center gap-3">
+          <div className="relative w-48">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
             <input
               type="text"
@@ -318,9 +318,9 @@ const Events = () => {
             />
           </div>
           <Link to="/create-event">
-            <button className="flex items-center gap-2 bg-petsu-blue text-white px-5 py-2 rounded-full hover:opacity-90 transition-opacity">
+            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
               <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium">Create Event</span>
+              <span className="text-sm">Create Event</span>
             </button>
           </Link>
         </div>
