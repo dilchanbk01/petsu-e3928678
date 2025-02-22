@@ -134,55 +134,72 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+      className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
-      <div className="p-6">
-        <div className="flex items-start gap-4">
+      <div className="relative p-6">
+        {/* Top section with image */}
+        <div className="flex items-start space-x-4">
           <div className="relative">
             <img
-              src={vet.image_url}
+              src={vet.image_url || '/public/lovable-uploads/c8691e4f-1095-4f6e-ae4b-a47d88f7384a.png'}
               alt={vet.name}
-              className="w-20 h-20 rounded-full object-cover"
+              className="w-24 h-24 object-cover rounded-full border-4 border-white shadow-md"
             />
-            <div className={`absolute bottom-0 right-0 p-1 rounded-full ${vet.availability.is_online ? 'bg-green-500' : 'bg-gray-400'}`}>
+            <div className={`absolute bottom-0 right-0 p-1 rounded-full ${
+              vet.availability.is_online ? 'bg-green-500' : 'bg-gray-400'
+            }`}>
               <Circle className="w-3 h-3 fill-white text-white" />
             </div>
           </div>
+          
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-900">{vet.name}</h3>
-              <span className={`text-sm px-2 py-1 rounded ${vet.availability.is_online ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                {vet.availability.is_online ? 'Online' : 'Offline'}
-              </span>
-            </div>
-            <p className="text-gray-600">{vet.specialty}</p>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center text-gray-500">
+              <h3 className="text-2xl font-bold text-gray-900">{vet.name}</h3>
+              <div className="flex items-center gap-1 bg-white rounded-full px-2 py-1 shadow-sm">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="ml-1">{vet.rating}</span>
-              </div>
-              <div className="flex items-center text-gray-500">
-                <MapPin className="w-4 h-4" />
-                <span className="ml-1 text-sm">{vet.location}</span>
+                <span className="font-semibold">{vet.rating}</span>
               </div>
             </div>
-            <div className="mt-2 text-sm text-gray-600">
-              <p>Experience: {vet.experience}</p>
-              <p>Languages: {vet.languages.join(", ")}</p>
-              <p>Consultation Fee: ${vet.consultation_fee}</p>
+            
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center text-gray-600">
+                <MapPin className="w-4 h-4 mr-2" />
+                <span>{vet.location} • {vet.experience}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <div className="flex items-center">
+                  {vet.specialty.split(',').map((specialty, index) => (
+                    <span key={index} className="mr-4 text-sm">
+                      {specialty.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <span className="text-sm">Languages: {vet.languages.join(", ")}</span>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Consultation Fee */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Consultation Fee</span>
+            <span className="text-lg font-bold text-petsu-blue">${vet.consultation_fee}</span>
+          </div>
+        </div>
+
+        {/* Booking Section */}
         {!isBooked ? (
           <div className="mt-4">
             {vet.availability.is_online ? (
               <Sheet>
                 <SheetTrigger asChild>
                   <Button 
-                    className="w-full mb-4 bg-green-500 hover:bg-green-600 text-white"
+                    className="w-full bg-petsu-blue hover:bg-petsu-blue/90 text-white"
                   >
-                    Start Immediate Consultation
+                    View Details & Book Now
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
@@ -218,7 +235,7 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
               </Sheet>
             ) : (
               <>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 mt-4">
                   <Calendar className="w-4 h-4 text-petsu-blue" />
                   <span className="font-medium text-petsu-blue">Available Slots</span>
                 </div>
