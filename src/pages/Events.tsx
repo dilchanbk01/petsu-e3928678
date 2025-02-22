@@ -143,7 +143,7 @@ const FilterBar = ({
         <h2 className="font-semibold">Filter Events</h2>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
           <input
@@ -155,7 +155,7 @@ const FilterBar = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <Select
             value={dateFilter}
             onValueChange={(value) => handleChange("date", value)}
@@ -465,8 +465,8 @@ const Events = () => {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen p-6 md:p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="flex justify-between items-center mb-6 sm:mb-8">
         <Link to="/">
           <motion.div
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
@@ -478,13 +478,13 @@ const Events = () => {
         <Link to="/create-event">
           <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" />
-            <span className="text-sm">Create Event</span>
+            <span className="text-sm hidden sm:inline">Create Event</span>
           </button>
         </Link>
       </div>
 
       <motion.h1 
-        className="text-2xl font-bold text-petsu-yellow mb-8"
+        className="text-xl sm:text-2xl font-bold text-petsu-yellow mb-6 sm:mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -497,12 +497,12 @@ const Events = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-12"
+          className="text-center py-8 sm:py-12"
         >
-          <p className="text-petsu-blue text-lg">No events found matching your filters.</p>
+          <p className="text-petsu-blue text-base sm:text-lg">No events found matching your filters.</p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {filteredEvents.map((event) => (
             <EventCard 
               key={event.id} 
@@ -517,16 +517,16 @@ const Events = () => {
         <SheetTrigger asChild>
           {cartItems.length > 0 && (
             <motion.div 
-              className="fixed left-1/2 bottom-8 -translate-x-1/2 bg-petsu-blue text-white px-5 py-2.5 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
+              className="fixed left-1/2 bottom-4 sm:bottom-8 -translate-x-1/2 bg-petsu-blue text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-2 sm:gap-3"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileHover={{ scale: 1.05 }}
             >
-              <span className="font-semibold text-sm">View Cart</span>
-              <div className="flex items-center gap-2 border-l border-white/20 pl-3">
-                <span className="text-sm">{totalItems}</span>
-                <span className="text-sm">•</span>
-                <span className="text-sm">₹{totalAmount}</span>
+              <span className="font-semibold text-xs sm:text-sm">View Cart</span>
+              <div className="flex items-center gap-1 sm:gap-2 border-l border-white/20 pl-2 sm:pl-3">
+                <span className="text-xs sm:text-sm">{totalItems}</span>
+                <span className="text-xs sm:text-sm hidden sm:inline">•</span>
+                <span className="text-xs sm:text-sm">₹{totalAmount}</span>
               </div>
             </motion.div>
           )}
