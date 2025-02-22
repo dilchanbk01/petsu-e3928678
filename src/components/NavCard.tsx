@@ -26,10 +26,10 @@ const NavCard = ({ title, imagePath, to, external }: NavCardProps) => {
         <img 
           src={imagePath} 
           alt={title} 
-          className="w-[280px] h-[280px] md:w-[200px] md:h-[200px] object-contain p-2"
+          className="w-[160px] h-[160px] md:w-[200px] md:h-[200px] object-contain p-2"
           loading="lazy"
-          width={280}
-          height={280}
+          width={160}
+          height={160}
         />
       </div>
     </motion.div>
