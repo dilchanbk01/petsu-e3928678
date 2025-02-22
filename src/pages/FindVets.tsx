@@ -1,10 +1,11 @@
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar } from "lucide-react";
+import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface VetProfile {
   id: number;
@@ -15,6 +16,7 @@ interface VetProfile {
   imageUrl: string;
   available: boolean;
   availableSlots: string[];
+  isOnline: boolean;
 }
 
 const vets: VetProfile[] = [
@@ -26,7 +28,8 @@ const vets: VetProfile[] = [
     location: "New York, USA",
     imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: true,
-    availableSlots: ["9:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"]
+    availableSlots: ["9:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"],
+    isOnline: true
   },
   {
     id: 2,
@@ -36,7 +39,8 @@ const vets: VetProfile[] = [
     location: "Los Angeles, USA",
     imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: true,
-    availableSlots: ["10:00 AM", "1:00 PM", "3:00 PM"]
+    availableSlots: ["10:00 AM", "1:00 PM", "3:00 PM"],
+    isOnline: false
   },
   {
     id: 3,
@@ -46,7 +50,8 @@ const vets: VetProfile[] = [
     location: "Chicago, USA",
     imageUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: false,
-    availableSlots: []
+    availableSlots: [],
+    isOnline: false
   }
 ];
 
@@ -61,7 +66,12 @@ const VetCard = ({ vet }: VetCardProps) => {
   const handleBook = () => {
     if (selectedSlot) {
       setIsBooked(true);
+      toast.success("Appointment booked successfully!");
     }
+  };
+
+  const handleDirectRequest = () => {
+    toast.success(`Direct request sent to ${vet.name}`);
   };
 
   return (
@@ -72,13 +82,23 @@ const VetCard = ({ vet }: VetCardProps) => {
     >
       <div className="p-6">
         <div className="flex items-start gap-4">
-          <img
-            src={vet.imageUrl}
-            alt={vet.name}
-            className="w-20 h-20 rounded-full object-cover"
-          />
+          <div className="relative">
+            <img
+              src={vet.imageUrl}
+              alt={vet.name}
+              className="w-20 h-20 rounded-full object-cover"
+            />
+            <div className={`absolute bottom-0 right-0 p-1 rounded-full ${vet.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}>
+              <Circle className="w-3 h-3 fill-white text-white" />
+            </div>
+          </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900">{vet.name}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-900">{vet.name}</h3>
+              <span className={`text-sm px-2 py-1 rounded ${vet.isOnline ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                {vet.isOnline ? 'Online' : 'Offline'}
+              </span>
+            </div>
             <p className="text-gray-600">{vet.specialty}</p>
             <div className="flex items-center mt-2 text-gray-500">
               <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -93,33 +113,44 @@ const VetCard = ({ vet }: VetCardProps) => {
 
         {!isBooked ? (
           <div className="mt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-petsu-blue" />
-              <span className="font-medium text-petsu-blue">Available Slots</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {vet.availableSlots.map((slot) => (
-                <Button
-                  key={slot}
-                  variant="outline"
-                  className={`${
-                    selectedSlot === slot
-                      ? "bg-petsu-yellow text-petsu-blue border-petsu-blue"
-                      : "hover:bg-petsu-yellow/10"
-                  }`}
-                  onClick={() => setSelectedSlot(slot)}
+            {vet.isOnline ? (
+              <Button 
+                className="w-full mb-4 bg-green-500 hover:bg-green-600 text-white"
+                onClick={handleDirectRequest}
+              >
+                Request Immediate Consultation
+              </Button>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="w-4 h-4 text-petsu-blue" />
+                  <span className="font-medium text-petsu-blue">Available Slots</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {vet.availableSlots.map((slot) => (
+                    <Button
+                      key={slot}
+                      variant="outline"
+                      className={`${
+                        selectedSlot === slot
+                          ? "bg-petsu-yellow text-petsu-blue border-petsu-blue"
+                          : "hover:bg-petsu-yellow/10"
+                      }`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </Button>
+                  ))}
+                </div>
+                <Button 
+                  className="w-full bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
+                  disabled={!selectedSlot}
+                  onClick={handleBook}
                 >
-                  {slot}
+                  Book Appointment
                 </Button>
-              ))}
-            </div>
-            <Button 
-              className="w-full bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-              disabled={!selectedSlot}
-              onClick={handleBook}
-            >
-              Book Appointment
-            </Button>
+              </>
+            )}
           </div>
         ) : (
           <div className="mt-6">
