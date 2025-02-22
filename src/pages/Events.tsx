@@ -296,29 +296,29 @@ const Events = () => {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen p-6 md:p-8">
+      <div className="flex justify-between items-center mb-10">
         <Link to="/">
           <motion.div
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border-2 border-petsu-blue hover:bg-petsu-yellow/20 transition-all duration-300"
             whileHover={{ x: -5 }}
           >
             <ArrowLeft className="w-6 h-6 text-petsu-blue" />
           </motion.div>
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="relative w-48">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
+        <div className="flex items-center gap-4">
+          <div className="relative w-56">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-petsu-blue/60 w-4 h-4" />
             <input
               type="text"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
             />
           </div>
           <Link to="/create-event">
-            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-1.5 rounded-full hover:opacity-90 transition-opacity">
+            <button className="flex items-center gap-2 bg-petsu-blue text-white px-5 py-2 rounded-full hover:opacity-90 transition-opacity">
               <Plus className="w-4 h-4" />
               <span className="text-sm font-medium">Create Event</span>
             </button>
@@ -327,14 +327,14 @@ const Events = () => {
       </div>
 
       <motion.h1 
-        className="text-4xl font-bold text-petsu-yellow mb-8"
+        className="text-4xl font-bold text-petsu-yellow mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         Upcoming Pet Events
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {filteredEvents.map((event) => (
           <EventCard 
             key={event.id} 
@@ -348,13 +348,13 @@ const Events = () => {
         <SheetTrigger asChild>
           {cartItems.length > 0 && (
             <motion.div 
-              className="fixed left-1/2 bottom-8 -translate-x-1/2 bg-petsu-blue text-white px-6 py-3 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
+              className="fixed left-1/2 bottom-10 -translate-x-1/2 bg-petsu-blue text-white px-7 py-3.5 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-4"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileHover={{ scale: 1.05 }}
             >
               <span className="font-semibold">View Cart</span>
-              <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+              <div className="flex items-center gap-3 border-l border-white/20 pl-4">
                 <span>{totalItems}</span>
                 <span>•</span>
                 <span>₹{totalAmount}</span>
