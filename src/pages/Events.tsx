@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-// Event type definition
 interface Event {
   id: string;
   title: string;
@@ -29,7 +27,6 @@ interface Event {
   availableTickets?: number;
 }
 
-// Cart item interface
 interface CartItem {
   eventId: string;
   title: string;
@@ -39,7 +36,6 @@ interface CartItem {
   price: number;
 }
 
-// Sample events data
 const sampleEvents: Event[] = [
   {
     id: "1",
@@ -167,23 +163,23 @@ const CartSheet = ({
   return (
     <SheetContent>
       <SheetHeader>
-        <SheetTitle>Your Tickets</SheetTitle>
+        <SheetTitle>Your Cart</SheetTitle>
         <SheetDescription>
-          Review your selected tickets before checkout
+          Review your selected event tickets
         </SheetDescription>
       </SheetHeader>
       <div className="mt-8 space-y-4">
         {cartItems.map((item) => (
           <div 
             key={item.eventId}
-            className="flex items-start justify-between p-4 bg-gray-50 rounded-lg"
+            className="flex items-start justify-between p-4 bg-white rounded-lg border border-petsu-blue/20"
           >
             <div>
               <h4 className="font-semibold text-petsu-blue">{item.title}</h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-petsu-blue/60">
                 {item.date} at {item.time}
               </p>
-              <p className="text-sm font-medium mt-1">
+              <p className="text-sm font-medium mt-1 text-petsu-blue">
                 {item.quantity} {item.quantity === 1 ? 'ticket' : 'tickets'} × ₹{item.price}
               </p>
             </div>
@@ -198,14 +194,13 @@ const CartSheet = ({
       </div>
       <SheetFooter className="mt-8">
         <div className="w-full space-y-4">
-          <div className="flex justify-between items-center font-semibold text-lg">
+          <div className="flex justify-between items-center font-semibold text-lg text-petsu-blue">
             <span>Total Amount</span>
             <span>₹{totalAmount}</span>
           </div>
           <Button 
             className="w-full bg-petsu-blue hover:bg-petsu-blue/90"
             onClick={() => {
-              // Implement checkout logic here
               alert("Proceeding to checkout...");
             }}
           >
@@ -238,7 +233,6 @@ const Events = () => {
         return;
       }
       
-      // Update available tickets
       setEvents(prevEvents => 
         prevEvents.map(e => 
           e.id === event.id 
@@ -276,7 +270,6 @@ const Events = () => {
   const handleRemoveFromCart = (eventId: string) => {
     const removedItem = cartItems.find(item => item.eventId === eventId);
     if (removedItem) {
-      // Restore available tickets
       setEvents(prevEvents =>
         prevEvents.map(e =>
           e.id === eventId
@@ -304,7 +297,6 @@ const Events = () => {
 
   return (
     <div className="min-h-screen p-8">
-      {/* Header with back button and search */}
       <div className="flex justify-between items-center mb-8">
         <Link to="/">
           <motion.div
@@ -335,7 +327,6 @@ const Events = () => {
         </div>
       </div>
 
-      {/* Main heading */}
       <motion.h1 
         className="text-4xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
@@ -344,7 +335,6 @@ const Events = () => {
         Upcoming Pet Events
       </motion.h1>
 
-      {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredEvents.map((event) => (
           <EventCard 
@@ -355,18 +345,19 @@ const Events = () => {
         ))}
       </div>
 
-      {/* Cart Sheet */}
       <Sheet>
         <SheetTrigger asChild>
           {cartItems.length > 0 && (
             <motion.div 
-              className="fixed bottom-8 right-8 bg-petsu-blue text-white p-4 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors"
+              className="fixed bottom-8 right-8 bg-petsu-blue text-white px-6 py-3 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileHover={{ scale: 1.05 }}
             >
-              <div className="flex items-center gap-2">
-                <span className="font-bold">View Cart ({totalItems})</span>
+              <span className="font-semibold">View Cart</span>
+              <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+                <span>{totalItems}</span>
+                <span>•</span>
                 <span>₹{totalAmount}</span>
               </div>
             </motion.div>
