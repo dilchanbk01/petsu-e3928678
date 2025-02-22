@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -58,14 +57,10 @@ const VetOnboarding = () => {
     setIsLoading(true);
 
     try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error("Not authenticated");
-
       const { error } = await supabase
         .from('vets')
         .insert({
           ...formData,
-          id: user.id, // Set the vet's ID to match the authenticated user's ID
           languages: formData.languages.split(',').map(lang => lang.trim()),
           consultation_fee: parseInt(formData.consultation_fee),
           approval_status: 'pending',
@@ -74,7 +69,7 @@ const VetOnboarding = () => {
       if (error) throw error;
 
       toast.success("Registration successful! Your profile is pending approval.");
-      navigate('/vet-dashboard');
+      navigate('/');
     } catch (error: any) {
       console.error("Error registering vet:", error);
       toast.error(error.message || "Failed to complete registration. Please try again.");
