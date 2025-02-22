@@ -1,12 +1,14 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { VetWithAvailability } from "@/types/vet";
+import { useQuery } from "@tanstack/react-query";
 
 interface VetProfile {
   id: number;
@@ -69,7 +71,7 @@ const vets: VetProfile[] = [
 ];
 
 interface VetCardProps {
-  vet: VetProfile;
+  vet: VetWithAvailability;
 }
 
 const ConsultationDetails = ({ 
@@ -112,13 +114,12 @@ const VetCard = ({ vet }: VetCardProps) => {
     if (selectedSlot) {
       setIsBooked(true);
       toast.success("Appointment booked successfully!");
-      // Here you would typically make an API call to save the appointment
     }
   };
 
   const handleStartConsultation = () => {
     setShowConsultation(true);
-    // In a real app, this would initialize the video call
+    toast.success("Starting consultation...");
   };
 
   return (
@@ -131,19 +132,19 @@ const VetCard = ({ vet }: VetCardProps) => {
         <div className="flex items-start gap-4">
           <div className="relative">
             <img
-              src={vet.imageUrl}
+              src={vet.image_url}
               alt={vet.name}
               className="w-20 h-20 rounded-full object-cover"
             />
-            <div className={`absolute bottom-0 right-0 p-1 rounded-full ${vet.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}>
+            <div className={`absolute bottom-0 right-0 p-1 rounded-full ${vet.availability.is_online ? 'bg-green-500' : 'bg-gray-400'}`}>
               <Circle className="w-3 h-3 fill-white text-white" />
             </div>
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">{vet.name}</h3>
-              <span className={`text-sm px-2 py-1 rounded ${vet.isOnline ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                {vet.isOnline ? 'Online' : 'Offline'}
+              <span className={`text-sm px-2 py-1 rounded ${vet.availability.is_online ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                {vet.availability.is_online ? 'Online' : 'Offline'}
               </span>
             </div>
             <p className="text-gray-600">{vet.specialty}</p>
@@ -160,14 +161,14 @@ const VetCard = ({ vet }: VetCardProps) => {
             <div className="mt-2 text-sm text-gray-600">
               <p>Experience: {vet.experience}</p>
               <p>Languages: {vet.languages.join(", ")}</p>
-              <p>Consultation Fee: ${vet.consultationFee}</p>
+              <p>Consultation Fee: ${vet.consultation_fee}</p>
             </div>
           </div>
         </div>
 
         {!isBooked ? (
           <div className="mt-4">
-            {vet.isOnline ? (
+            {vet.availability.is_online ? (
               <Sheet>
                 <SheetTrigger asChild>
                   <Button 
@@ -184,7 +185,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                     <div className="space-y-4">
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <h3 className="font-semibold mb-2">Consultation Fee</h3>
-                        <p className="text-2xl font-bold text-petsu-blue">${vet.consultationFee}</p>
+                        <p className="text-2xl font-bold text-petsu-blue">${vet.consultation_fee}</p>
                       </div>
                       <div className="flex gap-3">
                         <Button 
@@ -213,7 +214,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                   <span className="font-medium text-petsu-blue">Available Slots</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-4">
-                  {vet.availableSlots.map((slot) => (
+                  {vet.availability.available_slots.map((slot) => (
                     <Button
                       key={slot}
                       variant="outline"
@@ -231,7 +232,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                 {selectedSlot && (
                   <ConsultationDetails
                     selectedSlot={selectedSlot}
-                    consultationFee={vet.consultationFee}
+                    consultationFee={vet.consultation_fee}
                     onConfirm={handleBook}
                   />
                 )}
@@ -268,6 +269,50 @@ const VetCard = ({ vet }: VetCardProps) => {
 };
 
 const FindVets = () => {
+  const fetchVets = async () => {
+    const { data: vets, error: vetsError } = await supabase
+      .from('vets')
+      .select('*');
+    
+    if (vetsError) throw vetsError;
+
+    const { data: availability, error: availabilityError } = await supabase
+      .from('vet_availability')
+      .select('*');
+    
+    if (availabilityError) throw availabilityError;
+
+    return vets.map(vet => ({
+      ...vet,
+      availability: availability.find(a => a.vet_id === vet.id) || {
+        is_online: false,
+        available_slots: []
+      }
+    }));
+  };
+
+  const { data: vets = [], isLoading } = useQuery({
+    queryKey: ['vets'],
+    queryFn: fetchVets
+  });
+
+  useEffect(() => {
+    const channel = supabase.channel('realtime-vets')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'vet_availability' },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          // The query will automatically refetch when the data changes
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen p-8">
       <Link to="/">
@@ -303,11 +348,15 @@ const FindVets = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {vets.map((vet) => (
-            <VetCard key={vet.id} vet={vet} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-8">Loading vets...</div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            {vets.map((vet) => (
+              <VetCard key={vet.id} vet={vet} />
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );
