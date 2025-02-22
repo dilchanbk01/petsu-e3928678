@@ -35,10 +35,12 @@ const MyTickets = () => {
             <span className="text-xl font-semibold">Back to Events</span>
           </motion.div>
         </Link>
-        <div className="flex items-center gap-2">
-          <User className="w-6 h-6 text-petsu-yellow" />
-          <span className="text-petsu-yellow font-semibold">My Profile</span>
-        </div>
+        <Link to="/profile">
+          <div className="flex items-center gap-2 text-petsu-yellow hover:text-petsu-blue transition-colors">
+            <User className="w-6 h-6" />
+            <span className="font-semibold">My Profile</span>
+          </div>
+        </Link>
       </div>
 
       <motion.h1 
