@@ -9,24 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { lazy, Suspense } from "react";
 
-const NavCard = ({ title, imagePath, to }: { title: string; imagePath: string; to: string }) => (
-  <Link to={to}>
-    <motion.div
-      className="nav-card"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="nav-card-title">
-        {title} <ArrowRight className="w-6 h-6" />
-      </div>
-      <img src={imagePath} alt={title} className="nav-card-image" />
-    </motion.div>
-  </Link>
-);
+// Lazy load the NavCard component
+const NavCard = lazy(() => import("@/components/NavCard"));
 
+// Separate ProfileMenu into its own component
 const ProfileMenu = () => {
   const navigate = useNavigate();
   const userName = "John Doe"; // This could be fetched from your auth state
@@ -65,6 +53,13 @@ const ProfileMenu = () => {
   );
 };
 
+const LoadingCard = () => (
+  <div className="nav-card animate-pulse">
+    <div className="h-8 bg-petsu-blue/10 rounded mb-4"></div>
+    <div className="h-32 bg-petsu-blue/10 rounded"></div>
+  </div>
+);
+
 const Index = () => {
   return (
     <div className="min-h-screen p-8 flex flex-col items-center justify-center relative">
@@ -80,21 +75,27 @@ const Index = () => {
       </motion.h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
-        <NavCard 
-          title="Events" 
-          to="/events"
-          imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
-        />
-        <NavCard 
-          title="Find Vets" 
-          to="/find-vets"
-          imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
-        />
-        <NavCard 
-          title="Pet Essentials" 
-          to="/pet-essentials"
-          imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
-        />
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Events" 
+            to="/events"
+            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+          />
+        </Suspense>
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Find Vets" 
+            to="/find-vets"
+            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+          />
+        </Suspense>
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Pet Essentials" 
+            to="/pet-essentials"
+            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+          />
+        </Suspense>
       </div>
     </div>
   );
