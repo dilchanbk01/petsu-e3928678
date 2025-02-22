@@ -11,15 +11,21 @@ const Auth = () => {
 
   useEffect(() => {
     const handleAuthRedirect = async () => {
-      // Check if there's an access_token in the URL (OAuth redirect)
-      const refreshToken = searchParams.get('refresh_token');
-      const accessToken = searchParams.get('access_token');
+      const error = searchParams.get('error');
+      const errorDescription = searchParams.get('error_description');
       
-      if (refreshToken || accessToken) {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session error:', error);
-          toast.error("Authentication failed");
+      if (error) {
+        console.error('Auth error:', error, errorDescription);
+        toast.error(errorDescription || "Authentication failed");
+        return;
+      }
+
+      // Only try to get session if we have auth parameters
+      if (searchParams.has('access_token') || searchParams.has('refresh_token')) {
+        const { error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          toast.error("Failed to establish session");
         }
       }
     };
@@ -46,16 +52,20 @@ const Auth = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth`,
           scopes: 'email profile',
-          skipBrowserRedirect: false
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       });
       
       if (error) throw error;
+      console.log('Auth initiated:', data);
+      
     } catch (error: any) {
       console.error('Google auth error:', error);
       toast.error(error.message || "Error connecting to Google");
