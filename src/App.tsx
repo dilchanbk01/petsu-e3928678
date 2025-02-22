@@ -1,9 +1,7 @@
 
-import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { supabase } from "@/integrations/supabase/client";
 import Index from "@/pages/Index"
 import Profile from "@/pages/Profile"
 import Events from "@/pages/Events"
@@ -13,7 +11,6 @@ import CreateEvent from "@/pages/CreateEvent"
 import VetDashboard from "@/pages/VetDashboard"
 import VetOnboarding from "@/pages/VetOnboarding"
 import AdminDashboard from "@/pages/AdminDashboard"
-import AdminAuth from "@/pages/AdminAuth"
 import Auth from "@/pages/Auth"
 import NotFound from "@/pages/NotFound"
 import { AuthProvider, useAuth } from "@/components/AuthProvider"
@@ -41,45 +38,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!session?.user) return;
-
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      setIsAdmin(!!adminUser);
-    };
-
-    checkAdminStatus();
-  }, [session]);
-  
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-  
-  if (!session) {
-    return <Navigate to="/admin/auth" />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-
-  return children;
-};
-
 const AppRoutes = () => (
   <Routes>
     <Route path="/auth" element={<Auth />} />
-    <Route path="/admin/auth" element={<AdminAuth />} />
     <Route
       path="/"
       element={
@@ -147,9 +108,9 @@ const AppRoutes = () => (
     <Route
       path="/admin"
       element={
-        <AdminRoute>
+        <ProtectedRoute>
           <AdminDashboard />
-        </AdminRoute>
+        </ProtectedRoute>
       }
     />
     <Route path="*" element={<NotFound />} />
