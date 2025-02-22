@@ -34,6 +34,7 @@ interface Event {
   price: number;
   imageUrl: string;
   availableTickets?: number;
+  type: string;
 }
 
 interface CartItem {
@@ -55,7 +56,8 @@ const sampleEvents: Event[] = [
     description: "Find your perfect furry companion at our adoption event.",
     price: 0,
     imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 50
+    availableTickets: 50,
+    type: "Adoption"
   },
   {
     id: "2",
@@ -66,7 +68,8 @@ const sampleEvents: Event[] = [
     description: "Learn essential training techniques from expert trainers.",
     price: 49,
     imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 20
+    availableTickets: 20,
+    type: "Training"
   },
   {
     id: "3",
@@ -77,26 +80,34 @@ const sampleEvents: Event[] = [
     description: "Free health check-up for your pets by experienced veterinarians.",
     price: 0,
     imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 100
+    availableTickets: 100,
+    type: "Health"
   }
 ];
 
 const FilterBar = ({ 
   onFilterChange 
 }: { 
-  onFilterChange: (filters: { searchTerm: string; dateFilter: string; showFreeOnly: boolean }) => void 
+  onFilterChange: (filters: { 
+    searchTerm: string; 
+    dateFilter: string; 
+    showFreeOnly: boolean;
+    eventType: string;
+  }) => void 
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [showFreeOnly, setShowFreeOnly] = useState(false);
+  const [eventType, setEventType] = useState("all");
 
   const handleChange = (
-    type: "search" | "date" | "free",
+    type: "search" | "date" | "free" | "type",
     value: string | boolean
   ) => {
     let newSearchTerm = searchTerm;
     let newDateFilter = dateFilter;
     let newShowFreeOnly = showFreeOnly;
+    let newEventType = eventType;
 
     switch (type) {
       case "search":
@@ -111,12 +122,17 @@ const FilterBar = ({
         newShowFreeOnly = value as boolean;
         setShowFreeOnly(newShowFreeOnly);
         break;
+      case "type":
+        newEventType = value as string;
+        setEventType(newEventType);
+        break;
     }
 
     onFilterChange({
       searchTerm: newSearchTerm,
       dateFilter: newDateFilter,
       showFreeOnly: newShowFreeOnly,
+      eventType: newEventType,
     });
   };
 
@@ -133,7 +149,7 @@ const FilterBar = ({
         />
       </div>
       
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <Select
           value={dateFilter}
           onValueChange={(value) => handleChange("date", value)}
@@ -146,6 +162,23 @@ const FilterBar = ({
             <SelectItem value="today">Today</SelectItem>
             <SelectItem value="week">This week</SelectItem>
             <SelectItem value="month">This month</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={eventType}
+          onValueChange={(value) => handleChange("type", value)}
+        >
+          <SelectTrigger className="w-[180px] rounded-full border-2 border-petsu-blue">
+            <SelectValue placeholder="Event type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="Adoption">Adoption</SelectItem>
+            <SelectItem value="Training">Training</SelectItem>
+            <SelectItem value="Health">Health</SelectItem>
+            <SelectItem value="Social">Social</SelectItem>
+            <SelectItem value="Competition">Competition</SelectItem>
           </SelectContent>
         </Select>
 
@@ -314,6 +347,7 @@ const Events = () => {
     searchTerm: "",
     dateFilter: "all",
     showFreeOnly: false,
+    eventType: "all"
   });
 
   const handleRegister = (event: Event, quantity: number) => {
@@ -388,6 +422,8 @@ const Events = () => {
       event.location.toLowerCase().includes(filters.searchTerm.toLowerCase());
 
     const matchesPrice = !filters.showFreeOnly || event.price === 0;
+    
+    const matchesType = filters.eventType === "all" || event.type === filters.eventType;
 
     let matchesDate = true;
     const eventDate = new Date(event.date);
@@ -410,7 +446,7 @@ const Events = () => {
         break;
     }
 
-    return matchesSearch && matchesPrice && matchesDate;
+    return matchesSearch && matchesPrice && matchesDate && matchesType;
   });
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
