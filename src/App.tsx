@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Events from "./pages/Events";
+import CreateEvent from "./pages/CreateEvent";
 import FindVets from "./pages/FindVets";
 import PetEssentials from "./pages/PetEssentials";
 import NotFound from "./pages/NotFound";
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/find-vets" element={<FindVets />} />
           <Route path="/pet-essentials" element={<PetEssentials />} />
           <Route path="*" element={<NotFound />} />

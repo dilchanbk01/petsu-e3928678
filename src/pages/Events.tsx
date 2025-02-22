@@ -108,10 +108,12 @@ const Events = () => {
               className="pl-10 pr-4 py-2 rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
             />
           </div>
-          <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-            <Plus className="w-5 h-5" />
-            Create Event
-          </button>
+          <Link to="/create-event">
+            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
+              <Plus className="w-5 h-5" />
+              Create Event
+            </button>
+          </Link>
         </div>
       </div>
 
