@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -11,6 +10,7 @@ import {
   LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface Appointment {
   id: number;
@@ -48,7 +48,6 @@ const VetDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        {/* Sidebar */}
         <motion.div 
           className="w-64 bg-white h-screen shadow-lg p-6 flex flex-col"
           initial={{ x: -100, opacity: 0 }}
@@ -106,7 +105,6 @@ const VetDashboard = () => {
           </Button>
         </motion.div>
 
-        {/* Main Content */}
         <div className="flex-1 p-8">
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
