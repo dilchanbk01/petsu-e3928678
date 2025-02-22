@@ -12,7 +12,7 @@ interface NavCardProps {
 const NavCard = ({ title, imagePath, to }: NavCardProps) => (
   <Link to={to}>
     <motion.div
-      className="nav-card"
+      className="nav-card h-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
@@ -25,10 +25,10 @@ const NavCard = ({ title, imagePath, to }: NavCardProps) => (
         <img 
           src={imagePath} 
           alt={title} 
-          className="w-32 h-32 object-contain"
+          className="w-40 h-40 md:w-32 md:h-32 object-contain"
           loading="lazy"
-          width={128}
-          height={128}
+          width={160}
+          height={160}
         />
       </div>
     </motion.div>

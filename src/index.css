@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,11 +36,11 @@
   }
 
   .nav-card {
-    @apply relative overflow-hidden rounded-xl bg-petsu-yellow p-4 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer border-2 border-petsu-blue;
+    @apply relative overflow-hidden rounded-xl bg-petsu-yellow p-3 md:p-4 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer border-2 border-petsu-blue;
   }
 
   .nav-card-title {
-    @apply text-xl font-bold text-petsu-blue mb-3 flex items-center justify-between;
+    @apply text-xl font-bold text-petsu-blue mb-2 md:mb-3 flex items-center justify-between;
   }
 
   .nav-card-image {
