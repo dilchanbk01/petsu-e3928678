@@ -14,19 +14,45 @@ const AdminAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "admin@petsu.com",
+    password: "AdminPetsu2024!",
   });
+
+  const createAdminUser = async () => {
+    const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (signUpError) {
+      // If user already exists, try to sign in
+      if (signUpError.message.includes("already registered")) {
+        return await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+      }
+      throw signUpError;
+    }
+
+    // If we successfully created the user, insert them into admin_users
+    if (user) {
+      const { error: adminError } = await supabase
+        .from('admin_users')
+        .insert([{ id: user.id }]);
+
+      if (adminError) throw adminError;
+    }
+
+    return { data: { user }, error: null };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      const { data: { user }, error } = await createAdminUser();
 
       if (error) throw error;
 
@@ -82,12 +108,12 @@ const AdminAuth = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 required
+                readOnly
               />
             </div>
 
@@ -97,12 +123,12 @@ const AdminAuth = () => {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
                   required
+                  readOnly
                 />
                 <Button
                   type="button"
@@ -149,3 +175,4 @@ const AdminAuth = () => {
 };
 
 export default AdminAuth;
+
