@@ -1,19 +1,11 @@
+
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus, Minus, X, CreditCard, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Calendar, MapPin, Search, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
+// Event type definition
 interface Event {
   id: string;
   title: string;
@@ -25,6 +17,7 @@ interface Event {
   imageUrl: string;
 }
 
+// Cart item interface
 interface CartItem {
   eventId: string;
   title: string;
@@ -32,6 +25,7 @@ interface CartItem {
   price: number;
 }
 
+// Sample events data
 const sampleEvents: Event[] = [
   {
     id: "1",
@@ -50,7 +44,7 @@ const sampleEvents: Event[] = [
     time: "2:00 PM",
     location: "Pet Training Center",
     description: "Learn essential training techniques from expert trainers.",
-    price: 499,
+    price: 49,
     imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
   },
   {
@@ -64,32 +58,6 @@ const sampleEvents: Event[] = [
     imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
   }
 ];
-
-const QuantitySelector = ({ quantity, setQuantity }: { quantity: number; setQuantity: (n: number) => void }) => {
-  return (
-    <div className="flex items-center border-2 border-petsu-blue rounded-lg overflow-hidden">
-      <Button
-        type="button"
-        variant="ghost"
-        className="p-2 hover:bg-petsu-blue/10"
-        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-      >
-        <Minus className="h-4 w-4 text-petsu-blue" />
-      </Button>
-      <div className="px-4 py-1 text-petsu-blue font-semibold min-w-[80px] text-center">
-        {quantity} {quantity === 1 ? 'person' : 'people'}
-      </div>
-      <Button
-        type="button"
-        variant="ghost"
-        className="p-2 hover:bg-petsu-blue/10"
-        onClick={() => setQuantity(Math.min(5, quantity + 1))}
-      >
-        <Plus className="h-4 w-4 text-petsu-blue" />
-      </Button>
-    </div>
-  );
-};
 
 const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
   const [quantity, setQuantity] = useState(1);
@@ -124,30 +92,36 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
             {event.price === 0 ? "Free" : `₹${event.price}`}
           </span>
           {!showQuantity ? (
-            <Button 
-              className="bg-petsu-blue text-white hover:bg-petsu-blue/90"
+            <button 
+              className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               onClick={() => setShowQuantity(true)}
             >
               Register Now
-            </Button>
+            </button>
           ) : (
-            <motion.div 
-              className="flex items-center gap-3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
-              <Button
-                className="bg-petsu-blue text-white hover:bg-petsu-blue/90 whitespace-nowrap"
+            <div className="flex items-center gap-2">
+              <select
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
+              >
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <option key={num} value={num}>
+                    {num} {num === 1 ? "person" : "people"}
+                  </option>
+                ))}
+              </select>
+              <button
                 onClick={() => {
                   onRegister(event, quantity);
                   setShowQuantity(false);
                   setQuantity(1);
                 }}
+                className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               >
                 Add to Cart
-              </Button>
-            </motion.div>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -155,131 +129,14 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
   );
 };
 
-const CartModal = ({ 
-  isOpen, 
-  onClose, 
-  cartItems, 
-  totalAmount,
-  onCheckout 
-}: { 
-  isOpen: boolean;
-  onClose: () => void;
-  cartItems: CartItem[];
-  totalAmount: number;
-  onCheckout: () => void;
-}) => {
-  const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    name: ''
-  });
-
-  const handlePayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    onCheckout();
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Your Cart</DialogTitle>
-          <DialogDescription>
-            Review your selected events and complete payment
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            {cartItems.map((item) => (
-              <div key={item.eventId} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium">{item.title}</h4>
-                  <p className="text-sm text-gray-600">
-                    {item.quantity} {item.quantity === 1 ? 'ticket' : 'tickets'}
-                  </p>
-                </div>
-                <p className="font-semibold">₹{item.price * item.quantity}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-between items-center border-t pt-4">
-            <span className="font-bold">Total Amount:</span>
-            <span className="font-bold text-xl">₹{totalAmount}</span>
-          </div>
-
-          <form onSubmit={handlePayment} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Cardholder Name</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={paymentDetails.name}
-                onChange={(e) => setPaymentDetails(prev => ({ ...prev, name: e.target.value }))}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <Input
-                id="cardNumber"
-                placeholder="1234 5678 9012 3456"
-                value={paymentDetails.cardNumber}
-                onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
-                required
-                maxLength={16}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiryDate">Expiry Date</Label>
-                <Input
-                  id="expiryDate"
-                  placeholder="MM/YY"
-                  value={paymentDetails.expiryDate}
-                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryDate: e.target.value }))}
-                  required
-                  maxLength={5}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cvv">CVV</Label>
-                <Input
-                  id="cvv"
-                  type="password"
-                  placeholder="123"
-                  value={paymentDetails.cvv}
-                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
-                  required
-                  maxLength={3}
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full bg-petsu-blue text-white hover:bg-petsu-blue/90">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Pay ₹{totalAmount}
-            </Button>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 const Events = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>(() => {
     const savedEvents = localStorage.getItem('events');
     return savedEvents ? JSON.parse(savedEvents) : sampleEvents;
   });
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [showCart, setShowCart] = useState(false);
 
   const handleRegister = (event: Event, quantity: number) => {
     const newItem: CartItem = {
@@ -290,12 +147,15 @@ const Events = () => {
     };
 
     setCartItems(prev => {
+      // Check if item already exists in cart
       const existingItemIndex = prev.findIndex(item => item.eventId === event.id);
       if (existingItemIndex >= 0) {
+        // Update quantity if item exists
         const updatedItems = [...prev];
         updatedItems[existingItemIndex].quantity += quantity;
         return updatedItems;
       } else {
+        // Add new item if it doesn't exist
         return [...prev, newItem];
       }
     });
@@ -306,31 +166,12 @@ const Events = () => {
     });
   };
 
-  const handleCheckout = () => {
-    const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
-    const newTickets = cartItems.map(item => ({
-      ...item,
-      purchaseDate: new Date().toISOString(),
-      status: 'active'
-    }));
-    
-    localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ...newTickets]));
-    setCartItems([]);
-    setShowCart(false);
-    
-    toast({
-      title: "Payment Successful!",
-      description: "Your tickets have been added to My Tickets.",
-    });
-    
-    navigate('/my-tickets');
-  };
-
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen p-8">
+      {/* Header with back button and search */}
       <div className="flex justify-between items-center mb-8">
         <Link to="/">
           <motion.div
@@ -359,6 +200,7 @@ const Events = () => {
         </div>
       </div>
 
+      {/* Main heading */}
       <motion.h1 
         className="text-4xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
@@ -367,6 +209,7 @@ const Events = () => {
         Upcoming Pet Events
       </motion.h1>
 
+      {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {events.map((event) => (
           <EventCard 
@@ -377,14 +220,7 @@ const Events = () => {
         ))}
       </div>
 
-      <CartModal
-        isOpen={showCart}
-        onClose={() => setShowCart(false)}
-        cartItems={cartItems}
-        totalAmount={totalAmount}
-        onCheckout={handleCheckout}
-      />
-
+      {/* Footer with cart */}
       {cartItems.length > 0 && (
         <motion.div 
           className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
@@ -402,12 +238,9 @@ const Events = () => {
               ))}
             </div>
           </div>
-          <Button
-            onClick={() => setShowCart(true)}
-            className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90"
-          >
-            View Cart ({totalItems} {totalItems === 1 ? 'ticket' : 'tickets'})
-          </Button>
+          <button className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
+            View Cart ({totalItems})
+          </button>
         </motion.div>
       )}
     </div>
