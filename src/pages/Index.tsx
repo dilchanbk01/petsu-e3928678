@@ -1,7 +1,14 @@
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const NavCard = ({ title, imagePath, to }: { title: string; imagePath: string; to: string }) => (
   <Link to={to}>
@@ -20,9 +27,39 @@ const NavCard = ({ title, imagePath, to }: { title: string; imagePath: string; t
   </Link>
 );
 
+const ProfileMenu = () => {
+  const userName = "John Doe"; // This could be fetched from your auth state
+
+  return (
+    <div className="absolute top-4 right-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="flex items-center gap-2 text-petsu-blue hover:text-petsu-yellow">
+            <UserCircle className="w-6 h-6" />
+            <span>{userName}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem>
+            Profile Settings
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            My Tickets
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
 const Index = () => {
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center justify-center">
+    <div className="min-h-screen p-8 flex flex-col items-center justify-center relative">
+      <ProfileMenu />
+      
       <motion.h1
         className="logo-text mb-16 animate-bounce-subtle"
         initial={{ scale: 0.5, opacity: 0 }}
