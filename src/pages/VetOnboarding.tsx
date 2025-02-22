@@ -65,17 +65,19 @@ const VetOnboarding = () => {
         .from('vets')
         .insert({
           ...formData,
+          id: user.id, // Set the vet's ID to match the authenticated user's ID
           languages: formData.languages.split(',').map(lang => lang.trim()),
           consultation_fee: parseInt(formData.consultation_fee),
+          approval_status: 'pending',
         });
 
       if (error) throw error;
 
-      toast.success("Registration successful! Redirecting to dashboard...");
+      toast.success("Registration successful! Your profile is pending approval.");
       navigate('/vet-dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering vet:", error);
-      toast.error("Failed to complete registration. Please try again.");
+      toast.error(error.message || "Failed to complete registration. Please try again.");
     } finally {
       setIsLoading(false);
     }
