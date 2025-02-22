@@ -1,9 +1,18 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Minus, X, CreditCard, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Event {
   id: string;
@@ -146,6 +155,121 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
   );
 };
 
+const CartModal = ({ 
+  isOpen, 
+  onClose, 
+  cartItems, 
+  totalAmount,
+  onCheckout 
+}: { 
+  isOpen: boolean;
+  onClose: () => void;
+  cartItems: CartItem[];
+  totalAmount: number;
+  onCheckout: () => void;
+}) => {
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    name: ''
+  });
+
+  const handlePayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    onCheckout();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Your Cart</DialogTitle>
+          <DialogDescription>
+            Review your selected events and complete payment
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {cartItems.map((item) => (
+              <div key={item.eventId} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                <div>
+                  <h4 className="font-medium">{item.title}</h4>
+                  <p className="text-sm text-gray-600">
+                    {item.quantity} {item.quantity === 1 ? 'ticket' : 'tickets'}
+                  </p>
+                </div>
+                <p className="font-semibold">₹{item.price * item.quantity}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center border-t pt-4">
+            <span className="font-bold">Total Amount:</span>
+            <span className="font-bold text-xl">₹{totalAmount}</span>
+          </div>
+
+          <form onSubmit={handlePayment} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Cardholder Name</Label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={paymentDetails.name}
+                onChange={(e) => setPaymentDetails(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cardNumber">Card Number</Label>
+              <Input
+                id="cardNumber"
+                placeholder="1234 5678 9012 3456"
+                value={paymentDetails.cardNumber}
+                onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
+                required
+                maxLength={16}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiryDate">Expiry Date</Label>
+                <Input
+                  id="expiryDate"
+                  placeholder="MM/YY"
+                  value={paymentDetails.expiryDate}
+                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryDate: e.target.value }))}
+                  required
+                  maxLength={5}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvv">CVV</Label>
+                <Input
+                  id="cvv"
+                  type="password"
+                  placeholder="123"
+                  value={paymentDetails.cvv}
+                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
+                  required
+                  maxLength={3}
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full bg-petsu-blue text-white hover:bg-petsu-blue/90">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Pay ₹{totalAmount}
+            </Button>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Events = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -155,6 +279,7 @@ const Events = () => {
   });
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
 
   const handleRegister = (event: Event, quantity: number) => {
     const newItem: CartItem = {
@@ -190,11 +315,11 @@ const Events = () => {
     }));
     
     localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ...newTickets]));
-    
     setCartItems([]);
+    setShowCart(false);
     
     toast({
-      title: "Purchase Successful!",
+      title: "Payment Successful!",
       description: "Your tickets have been added to My Tickets.",
     });
     
@@ -252,6 +377,14 @@ const Events = () => {
         ))}
       </div>
 
+      <CartModal
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+        cartItems={cartItems}
+        totalAmount={totalAmount}
+        onCheckout={handleCheckout}
+      />
+
       {cartItems.length > 0 && (
         <motion.div 
           className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
@@ -270,10 +403,10 @@ const Events = () => {
             </div>
           </div>
           <Button
-            onClick={handleCheckout}
+            onClick={() => setShowCart(true)}
             className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90"
           >
-            Checkout ({totalItems} {totalItems === 1 ? 'ticket' : 'tickets'})
+            View Cart ({totalItems} {totalItems === 1 ? 'ticket' : 'tickets'})
           </Button>
         </motion.div>
       )}
