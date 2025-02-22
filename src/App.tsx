@@ -9,6 +9,7 @@ import Events from "./pages/Events";
 import CreateEvent from "./pages/CreateEvent";
 import FindVets from "./pages/FindVets";
 import PetEssentials from "./pages/PetEssentials";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/find-vets" element={<FindVets />} />
           <Route path="/pet-essentials" element={<PetEssentials />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

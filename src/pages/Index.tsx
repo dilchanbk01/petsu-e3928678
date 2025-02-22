@@ -1,7 +1,7 @@
 
 import { ArrowRight, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +28,7 @@ const NavCard = ({ title, imagePath, to }: { title: string; imagePath: string; t
 );
 
 const ProfileMenu = () => {
+  const navigate = useNavigate();
   const userName = "John Doe"; // This could be fetched from your auth state
 
   return (
@@ -46,7 +47,10 @@ const ProfileMenu = () => {
           align="end" 
           className="w-56 p-2 bg-white/95 backdrop-blur-sm border-2 border-petsu-blue rounded-xl shadow-lg"
         >
-          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
+          <DropdownMenuItem 
+            className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium"
+            onClick={() => navigate('/profile')}
+          >
             Profile Settings
           </DropdownMenuItem>
           <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
