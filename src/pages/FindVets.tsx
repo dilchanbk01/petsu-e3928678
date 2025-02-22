@@ -358,7 +358,25 @@ const FindVets = () => {
         </div>
       </div>
 
-      <div className="mb-8">
+      <motion.h1 
+        className="text-2xl font-bold text-petsu-yellow mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        Online Vet Consultation
+      </motion.h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8">
+        {isLoading ? (
+          <div className="text-center py-8">Loading vets...</div>
+        ) : (
+          vets.map((vet) => (
+            <VetCard key={vet.id} vet={vet} />
+          ))
+        )}
+      </div>
+
+      <div className="mt-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -383,24 +401,6 @@ const FindVets = () => {
             </div>
           </div>
         </motion.div>
-      </div>
-
-      <motion.h1 
-        className="text-2xl font-bold text-petsu-yellow mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        Online Vet Consultation
-      </motion.h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {isLoading ? (
-          <div className="text-center py-8">Loading vets...</div>
-        ) : (
-          vets.map((vet) => (
-            <VetCard key={vet.id} vet={vet} />
-          ))
-        )}
       </div>
     </div>
   );
