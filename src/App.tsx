@@ -65,14 +65,12 @@ const AppRoutes = () => (
         </AdminRoute>
       }
     />
-    <Route
-      path="/"
-      element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      }
-    />
+    {/* Public routes that don't require authentication */}
+    <Route path="/" element={<Index />} />
+    <Route path="/find-vets" element={<FindVets />} />
+    <Route path="/vet-onboarding" element={<VetOnboarding />} />
+    
+    {/* Protected routes that require authentication */}
     <Route
       path="/profile"
       element={
@@ -86,14 +84,6 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Events />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/find-vets"
-      element={
-        <ProtectedRoute>
-          <FindVets />
         </ProtectedRoute>
       }
     />
@@ -118,14 +108,6 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <VetDashboard />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/vet-onboarding"
-      element={
-        <ProtectedRoute>
-          <VetOnboarding />
         </ProtectedRoute>
       }
     />
