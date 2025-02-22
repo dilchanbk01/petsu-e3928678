@@ -2,7 +2,6 @@
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import NavCard from "@/components/NavCard";
 
 const PetEssentials = () => {
   return (
@@ -26,16 +25,11 @@ const PetEssentials = () => {
       </motion.h1>
       
       <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="bg-petsu-yellow rounded-2xl p-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <NavCard
-          title="Shop at SuperTails"
-          imagePath="/lovable-uploads/a6a449a5-6229-468c-b139-1e521c756165.png"
-          to="https://supertails.com/"
-          external={true}
-        />
+        <p className="text-petsu-blue text-xl">Coming soon: Shop for essential pet supplies!</p>
       </motion.div>
     </div>
   );

@@ -295,8 +295,7 @@ const FindVets = () => {
   const fetchVets = async () => {
     const { data: vets, error: vetsError } = await supabase
       .from('vets')
-      .select('*')
-      .eq('approval_status', 'approved');
+      .select('*');
     
     if (vetsError) throw vetsError;
 

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -12,8 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,18 +36,17 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Sign up successful! Please check your email.");
+        toast.success("Registration successful! Please check your email to confirm your account.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         if (error) throw error;
-        toast.success("Welcome back!");
         navigate("/");
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -61,28 +60,25 @@ const Auth = () => {
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
-          <img
+          <img 
             src="/lovable-uploads/1a656558-105f-41b6-b91a-c324a03f1217.png"
             alt="Petsu"
             className="w-48 mx-auto mb-6"
           />
-          <h1 className="text-2xl font-bold text-white mb-2">
-            {isSignUp ? "Create an Account" : "Welcome Back"}
-          </h1>
-          <p className="text-white/80">
-            {isSignUp
-              ? "Sign up to join our pet-loving community"
-              : "Sign in to access your account"}
-          </p>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-2 border-petsu-blue">
+          <h1 className="text-2xl font-bold text-petsu-blue mb-6 text-center">
+            {isSignUp ? "Create an Account" : "Welcome Back"}
+          </h1>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
+                  type="text"
                   placeholder="John Doe"
                   value={formData.fullName}
                   onChange={(e) =>
@@ -144,14 +140,14 @@ const Auth = () => {
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : isSignUp ? (
-                "Create Account"
+                "Sign Up"
               ) : (
                 "Sign In"
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center space-y-4">
+          <div className="mt-6 text-center">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
@@ -161,15 +157,6 @@ const Auth = () => {
                 ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
-            
-            <div className="pt-2 border-t border-gray-200">
-              <Link
-                to="/admin-auth"
-                className="text-sm text-petsu-green hover:underline block"
-              >
-                Admin Login
-              </Link>
-            </div>
           </div>
         </div>
       </motion.div>
