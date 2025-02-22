@@ -358,6 +358,33 @@ const FindVets = () => {
         </div>
       </div>
 
+      <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-petsu-blue to-petsu-blue/80 rounded-2xl p-6 md:p-8 text-white"
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">Are you a veterinarian?</h2>
+              <p className="text-white/90 mb-4">Join our network of professional vets and connect with pet owners.</p>
+              <Link to="/vet-onboarding">
+                <Button className="bg-white text-petsu-blue hover:bg-petsu-yellow">
+                  Join as a Vet Partner
+                </Button>
+              </Link>
+            </div>
+            <div className="hidden md:block">
+              <img 
+                src="/lovable-uploads/c8691e4f-1095-4f6e-ae4b-a47d88f7384a.png" 
+                alt="Vet Partner" 
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       <motion.h1 
         className="text-2xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
