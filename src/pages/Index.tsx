@@ -12,11 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 
 const NavCard = lazy(() => import("@/components/NavCard"));
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const userName = "John Doe"; // This could be fetched from your auth state
 
   const handleSignOut = async () => {
@@ -46,6 +48,14 @@ const ProfileMenu = () => {
           align="end" 
           className="w-56 p-2 bg-white/95 backdrop-blur-sm border-2 border-petsu-blue rounded-xl shadow-lg"
         >
+          {isAdmin && (
+            <DropdownMenuItem 
+              className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium"
+              onClick={() => navigate('/admin')}
+            >
+              Admin Dashboard
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem 
             className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium"
             onClick={() => navigate('/profile')}
