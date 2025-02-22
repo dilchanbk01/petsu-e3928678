@@ -1,11 +1,12 @@
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle } from "lucide-react";
+import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface VetProfile {
   id: number;
@@ -17,6 +18,9 @@ interface VetProfile {
   available: boolean;
   availableSlots: string[];
   isOnline: boolean;
+  consultationFee: number;
+  languages: string[];
+  experience: string;
 }
 
 const vets: VetProfile[] = [
@@ -29,7 +33,10 @@ const vets: VetProfile[] = [
     imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: true,
     availableSlots: ["9:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"],
-    isOnline: true
+    isOnline: true,
+    consultationFee: 75,
+    languages: ["English", "Spanish"],
+    experience: "12 years"
   },
   {
     id: 2,
@@ -40,7 +47,10 @@ const vets: VetProfile[] = [
     imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: true,
     availableSlots: ["10:00 AM", "1:00 PM", "3:00 PM"],
-    isOnline: false
+    isOnline: false,
+    consultationFee: 65,
+    languages: ["English", "Mandarin"],
+    experience: "8 years"
   },
   {
     id: 3,
@@ -51,7 +61,10 @@ const vets: VetProfile[] = [
     imageUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     available: false,
     availableSlots: [],
-    isOnline: false
+    isOnline: false,
+    consultationFee: 70,
+    languages: ["English"],
+    experience: "15 years"
   }
 ];
 
@@ -59,19 +72,53 @@ interface VetCardProps {
   vet: VetProfile;
 }
 
+const ConsultationDetails = ({ 
+  selectedSlot, 
+  consultationFee,
+  onConfirm 
+}: { 
+  selectedSlot: string;
+  consultationFee: number;
+  onConfirm: () => void;
+}) => (
+  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+    <h3 className="font-semibold text-lg mb-4">Consultation Details</h3>
+    <div className="space-y-2 mb-4">
+      <div className="flex justify-between">
+        <span>Appointment Time:</span>
+        <span className="font-medium">{selectedSlot}</span>
+      </div>
+      <div className="flex justify-between">
+        <span>Consultation Fee:</span>
+        <span className="font-medium">${consultationFee}</span>
+      </div>
+    </div>
+    <Button 
+      onClick={onConfirm}
+      className="w-full bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
+    >
+      <Check className="w-4 h-4 mr-2" />
+      Confirm Booking
+    </Button>
+  </div>
+);
+
 const VetCard = ({ vet }: VetCardProps) => {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isBooked, setIsBooked] = useState(false);
+  const [showConsultation, setShowConsultation] = useState(false);
 
   const handleBook = () => {
     if (selectedSlot) {
       setIsBooked(true);
       toast.success("Appointment booked successfully!");
+      // Here you would typically make an API call to save the appointment
     }
   };
 
-  const handleDirectRequest = () => {
-    toast.success(`Direct request sent to ${vet.name}`);
+  const handleStartConsultation = () => {
+    setShowConsultation(true);
+    // In a real app, this would initialize the video call
   };
 
   return (
@@ -100,13 +147,20 @@ const VetCard = ({ vet }: VetCardProps) => {
               </span>
             </div>
             <p className="text-gray-600">{vet.specialty}</p>
-            <div className="flex items-center mt-2 text-gray-500">
-              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-              <span className="ml-1">{vet.rating}</span>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center text-gray-500">
+                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <span className="ml-1">{vet.rating}</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <MapPin className="w-4 h-4" />
+                <span className="ml-1 text-sm">{vet.location}</span>
+              </div>
             </div>
-            <div className="flex items-center mt-1 text-gray-500">
-              <MapPin className="w-4 h-4" />
-              <span className="ml-1 text-sm">{vet.location}</span>
+            <div className="mt-2 text-sm text-gray-600">
+              <p>Experience: {vet.experience}</p>
+              <p>Languages: {vet.languages.join(", ")}</p>
+              <p>Consultation Fee: ${vet.consultationFee}</p>
             </div>
           </div>
         </div>
@@ -114,12 +168,44 @@ const VetCard = ({ vet }: VetCardProps) => {
         {!isBooked ? (
           <div className="mt-4">
             {vet.isOnline ? (
-              <Button 
-                className="w-full mb-4 bg-green-500 hover:bg-green-600 text-white"
-                onClick={handleDirectRequest}
-              >
-                Request Immediate Consultation
-              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button 
+                    className="w-full mb-4 bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    Start Immediate Consultation
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Start Consultation</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <h3 className="font-semibold mb-2">Consultation Fee</h3>
+                        <p className="text-2xl font-bold text-petsu-blue">${vet.consultationFee}</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button 
+                          className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
+                          onClick={handleStartConsultation}
+                        >
+                          <Video className="w-4 h-4 mr-2" />
+                          Start Video Call
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Start Chat
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             ) : (
               <>
                 <div className="flex items-center gap-2 mb-3">
@@ -142,13 +228,13 @@ const VetCard = ({ vet }: VetCardProps) => {
                     </Button>
                   ))}
                 </div>
-                <Button 
-                  className="w-full bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-                  disabled={!selectedSlot}
-                  onClick={handleBook}
-                >
-                  Book Appointment
-                </Button>
+                {selectedSlot && (
+                  <ConsultationDetails
+                    selectedSlot={selectedSlot}
+                    consultationFee={vet.consultationFee}
+                    onConfirm={handleBook}
+                  />
+                )}
               </>
             )}
           </div>
