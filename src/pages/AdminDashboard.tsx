@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { LogOut, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -31,10 +30,7 @@ const AdminDashboard = () => {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from('admin_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+        .rpc('get_admin_role', { user_id: user.id });
 
       if (error) {
         console.error('Error fetching admin role:', error);
@@ -50,13 +46,12 @@ const AdminDashboard = () => {
     queryKey: ['pendingEvents'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('approval_status', 'pending');
+        .rpc('get_pending_events');
 
       if (error) {
+        console.error('Error fetching pending events:', error);
         toast.error('Error fetching pending events');
-        throw error;
+        return [];
       }
 
       return data as Event[];
@@ -67,13 +62,12 @@ const AdminDashboard = () => {
     queryKey: ['pendingVets'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('vets')
-        .select('*')
-        .eq('approval_status', 'pending');
+        .rpc('get_pending_vets');
 
       if (error) {
+        console.error('Error fetching pending vets:', error);
         toast.error('Error fetching pending vets');
-        throw error;
+        return [];
       }
 
       return data as Vet[];
@@ -83,9 +77,10 @@ const AdminDashboard = () => {
   const updateEventStatus = useMutation({
     mutationFn: async ({ eventId, status }: { eventId: string; status: 'approved' | 'declined' }) => {
       const { error } = await supabase
-        .from('events')
-        .update({ approval_status: status })
-        .eq('id', eventId);
+        .rpc('update_event_status', { 
+          event_id: eventId,
+          new_status: status 
+        });
 
       if (error) throw error;
     },
@@ -93,7 +88,8 @@ const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEvents'] });
       toast.success('Event status updated successfully');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error updating event status:', error);
       toast.error('Failed to update event status');
     }
   });
@@ -101,9 +97,10 @@ const AdminDashboard = () => {
   const updateVetStatus = useMutation({
     mutationFn: async ({ vetId, status }: { vetId: string; status: 'approved' | 'declined' }) => {
       const { error } = await supabase
-        .from('vets')
-        .update({ approval_status: status })
-        .eq('id', vetId);
+        .rpc('update_vet_status', { 
+          vet_id: vetId,
+          new_status: status 
+        });
 
       if (error) throw error;
     },
@@ -111,7 +108,8 @@ const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['pendingVets'] });
       toast.success('Vet status updated successfully');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error updating vet status:', error);
       toast.error('Failed to update vet status');
     }
   });
@@ -148,7 +146,6 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Pending Events Section */}
           <div className="bg-white p-6 rounded-xl border-2 border-petsu-blue">
             <h2 className="text-xl font-semibold text-petsu-blue mb-4">
               Pending Events
@@ -205,7 +202,6 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Pending Vets Section */}
           <div className="bg-white p-6 rounded-xl border-2 border-petsu-blue">
             <h2 className="text-xl font-semibold text-petsu-blue mb-4">
               Pending Vets
