@@ -36,19 +36,19 @@
   }
 
   .nav-card {
-    @apply relative overflow-hidden rounded-2xl bg-petsu-yellow p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer border-4 border-petsu-blue;
+    @apply relative overflow-hidden rounded-xl bg-petsu-yellow p-4 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer border-2 border-petsu-blue;
   }
 
   .nav-card-title {
-    @apply text-2xl font-bold text-petsu-blue mb-4 flex items-center justify-between;
+    @apply text-xl font-bold text-petsu-blue mb-3 flex items-center justify-between;
   }
 
   .nav-card-image {
-    @apply w-32 h-32 mx-auto object-contain transition-transform duration-300;
+    @apply w-24 h-24 mx-auto object-contain transition-transform duration-300;
   }
 
   .logo-text {
-    @apply text-petsu-yellow text-6xl md:text-7xl font-bold tracking-wider;
-    text-shadow: 4px 4px 0px #1A237E;
+    @apply text-petsu-yellow text-5xl md:text-6xl font-bold tracking-wider;
+    text-shadow: 3px 3px 0px #1A237E;
   }
 }

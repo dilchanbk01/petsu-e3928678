@@ -18,16 +18,16 @@ const NavCard = ({ title, imagePath, to }: NavCardProps) => (
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="nav-card-title">
-        {title} <ArrowRight className="w-6 h-6" />
+      <div className="nav-card-title text-xl">
+        {title} <ArrowRight className="w-4 h-4" />
       </div>
       <img 
         src={imagePath} 
         alt={title} 
-        className="nav-card-image"
+        className="nav-card-image w-24 h-24"
         loading="lazy"
-        width={128}
-        height={128}
+        width={96}
+        height={96}
       />
     </motion.div>
   </Link>

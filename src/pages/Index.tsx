@@ -62,11 +62,11 @@ const LoadingCard = () => (
 
 const Index = () => {
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center justify-center relative">
+    <div className="min-h-screen p-6 md:p-8 flex flex-col items-center justify-center relative">
       <ProfileMenu />
       
       <motion.h1
-        className="logo-text mb-16 animate-bounce-subtle"
+        className="logo-text mb-12"
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -74,7 +74,7 @@ const Index = () => {
         Petsu
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
         <Suspense fallback={<LoadingCard />}>
           <NavCard 
             title="Events" 
