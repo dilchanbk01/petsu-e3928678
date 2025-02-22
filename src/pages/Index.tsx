@@ -82,21 +82,21 @@ const Index = () => {
           <NavCard 
             title="Events" 
             to="/events"
-            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+            imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
           />
         </Suspense>
         <Suspense fallback={<LoadingCard />}>
           <NavCard 
             title="Find Vets" 
             to="/find-vets"
-            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+            imagePath="/lovable-uploads/a3170256-7917-4520-8e32-415c15d0ce0d.png"
           />
         </Suspense>
         <Suspense fallback={<LoadingCard />}>
           <NavCard 
             title="Pet Essentials" 
             to="/pet-essentials"
-            imagePath={"/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"} 
+            imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
           />
         </Suspense>
       </div>
