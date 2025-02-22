@@ -34,12 +34,14 @@ const Auth = () => {
         .single();
 
       if (adminData) {
-        navigate('/admin');
+        // If admin tries to login through user login, redirect to admin login
+        await supabase.auth.signOut();
+        toast.error("Please use admin login page");
+        navigate('/admin/auth');
       } else {
         navigate('/');
+        toast.success("Logged in successfully!");
       }
-
-      toast.success("Logged in successfully!");
     } catch (error: any) {
       toast.error(error.message || "Failed to log in");
     } finally {
@@ -75,6 +77,15 @@ const Auth = () => {
           <CardTitle className="text-2xl font-bold text-center">Welcome to Petsu</CardTitle>
           <CardDescription className="text-center">
             Enter your email below to login or create your account
+          </CardDescription>
+          <CardDescription className="text-center text-sm">
+            <Button
+              variant="link"
+              className="p-0"
+              onClick={() => navigate('/admin/auth')}
+            >
+              Admin? Login here
+            </Button>
           </CardDescription>
         </CardHeader>
         <CardContent>
