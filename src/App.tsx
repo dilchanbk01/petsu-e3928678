@@ -11,13 +11,15 @@ import CreateEvent from "@/pages/CreateEvent"
 import VetDashboard from "@/pages/VetDashboard"
 import VetOnboarding from "@/pages/VetOnboarding"
 import Auth from "@/pages/Auth"
+import AdminAuth from "@/pages/AdminAuth"
+import AdminDashboard from "@/pages/AdminDashboard"
 import NotFound from "@/pages/NotFound"
 import { AuthProvider, useAuth } from "@/components/AuthProvider"
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 60 * 1000,
       refetchOnWindowFocus: false,
     },
   },
@@ -37,9 +39,32 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!session) {
+    return <Navigate to="/admin-auth" />;
+  }
+
+  return children;
+};
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/auth" element={<Auth />} />
+    <Route path="/admin-auth" element={<AdminAuth />} />
+    <Route
+      path="/admin"
+      element={
+        <AdminRoute>
+          <AdminDashboard />
+        </AdminRoute>
+      }
+    />
     <Route
       path="/"
       element={
