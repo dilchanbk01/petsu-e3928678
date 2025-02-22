@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -9,66 +10,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { supabase } from "@/integrations/supabase/client";
 import { VetWithAvailability } from "@/types/vet";
 import { useQuery } from "@tanstack/react-query";
-
-interface VetProfile {
-  id: number;
-  name: string;
-  specialty: string;
-  rating: number;
-  location: string;
-  imageUrl: string;
-  available: boolean;
-  availableSlots: string[];
-  isOnline: boolean;
-  consultationFee: number;
-  languages: string[];
-  experience: string;
-}
-
-const vets: VetProfile[] = [
-  {
-    id: 1,
-    name: "Dr. Sarah Wilson",
-    specialty: "Small Animals & Exotic Pets",
-    rating: 4.9,
-    location: "New York, USA",
-    imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
-    available: true,
-    availableSlots: ["9:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"],
-    isOnline: true,
-    consultationFee: 75,
-    languages: ["English", "Spanish"],
-    experience: "12 years"
-  },
-  {
-    id: 2,
-    name: "Dr. Michael Chen",
-    specialty: "Dogs & Cats Specialist",
-    rating: 4.8,
-    location: "Los Angeles, USA",
-    imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
-    available: true,
-    availableSlots: ["10:00 AM", "1:00 PM", "3:00 PM"],
-    isOnline: false,
-    consultationFee: 65,
-    languages: ["English", "Mandarin"],
-    experience: "8 years"
-  },
-  {
-    id: 3,
-    name: "Dr. Emily Brown",
-    specialty: "Animal Nutrition Expert",
-    rating: 4.7,
-    location: "Chicago, USA",
-    imageUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
-    available: false,
-    availableSlots: [],
-    isOnline: false,
-    consultationFee: 70,
-    languages: ["English"],
-    experience: "15 years"
-  }
-];
 
 interface VetCardProps {
   vet: VetWithAvailability;

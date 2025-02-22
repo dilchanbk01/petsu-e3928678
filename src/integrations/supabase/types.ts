@@ -33,6 +33,86 @@ export type Database = {
         }
         Relationships: []
       }
+      vet_availability: {
+        Row: {
+          available_slots: string[] | null
+          created_at: string
+          id: string
+          is_online: boolean | null
+          last_seen_at: string | null
+          updated_at: string
+          vet_id: string | null
+        }
+        Insert: {
+          available_slots?: string[] | null
+          created_at?: string
+          id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          updated_at?: string
+          vet_id?: string | null
+        }
+        Update: {
+          available_slots?: string[] | null
+          created_at?: string
+          id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          updated_at?: string
+          vet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_availability_vet_id_fkey"
+            columns: ["vet_id"]
+            isOneToOne: false
+            referencedRelation: "vets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vets: {
+        Row: {
+          consultation_fee: number
+          created_at: string
+          experience: string | null
+          id: string
+          image_url: string | null
+          languages: string[] | null
+          location: string
+          name: string
+          rating: number | null
+          specialty: string
+          updated_at: string
+        }
+        Insert: {
+          consultation_fee: number
+          created_at?: string
+          experience?: string | null
+          id?: string
+          image_url?: string | null
+          languages?: string[] | null
+          location: string
+          name: string
+          rating?: number | null
+          specialty: string
+          updated_at?: string
+        }
+        Update: {
+          consultation_fee?: number
+          created_at?: string
+          experience?: string | null
+          id?: string
+          image_url?: string | null
+          languages?: string[] | null
+          location?: string
+          name?: string
+          rating?: number | null
+          specialty?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
