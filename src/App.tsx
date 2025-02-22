@@ -1,6 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Index from "@/pages/Index"
 import Profile from "@/pages/Profile"
 import Events from "@/pages/Events"
@@ -12,6 +13,15 @@ import VetOnboarding from "@/pages/VetOnboarding"
 import Auth from "@/pages/Auth"
 import NotFound from "@/pages/NotFound"
 import { AuthProvider, useAuth } from "@/components/AuthProvider"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
@@ -100,12 +110,14 @@ const AppRoutes = () => (
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <AppRoutes />
-        <Toaster position="top-center" expand={true} richColors />
-      </AuthProvider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AuthProvider>
+          <AppRoutes />
+          <Toaster position="top-center" expand={true} richColors />
+        </AuthProvider>
+      </Router>
+    </QueryClientProvider>
   );
 };
 
