@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
