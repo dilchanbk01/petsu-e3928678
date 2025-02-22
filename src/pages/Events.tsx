@@ -1,9 +1,20 @@
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 // Event type definition
 interface Event {
@@ -15,12 +26,15 @@ interface Event {
   description: string;
   price: number;
   imageUrl: string;
+  availableTickets?: number;
 }
 
 // Cart item interface
 interface CartItem {
   eventId: string;
   title: string;
+  date: string;
+  time: string;
   quantity: number;
   price: number;
 }
@@ -35,7 +49,8 @@ const sampleEvents: Event[] = [
     location: "Central Park",
     description: "Find your perfect furry companion at our adoption event.",
     price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
+    availableTickets: 50
   },
   {
     id: "2",
@@ -45,7 +60,8 @@ const sampleEvents: Event[] = [
     location: "Pet Training Center",
     description: "Learn essential training techniques from expert trainers.",
     price: 49,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
+    availableTickets: 20
   },
   {
     id: "3",
@@ -55,13 +71,15 @@ const sampleEvents: Event[] = [
     location: "City Vet Clinic",
     description: "Free health check-up for your pets by experienced veterinarians.",
     price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
+    availableTickets: 100
   }
 ];
 
 const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
   const [quantity, setQuantity] = useState(1);
   const [showQuantity, setShowQuantity] = useState(false);
+  const maxTickets = Math.min(event.availableTickets || 5, 5);
 
   return (
     <motion.div 
@@ -71,11 +89,18 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <img 
-        src={event.imageUrl} 
-        alt={event.title} 
-        className="w-full h-48 object-cover"
-      />
+      <div className="relative">
+        <img 
+          src={event.imageUrl} 
+          alt={event.title} 
+          className="w-full h-48 object-cover"
+        />
+        {event.availableTickets !== undefined && event.availableTickets <= 10 && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+            Only {event.availableTickets} tickets left!
+          </div>
+        )}
+      </div>
       <div className="p-6">
         <h3 className="text-xl font-bold text-petsu-blue mb-2">{event.title}</h3>
         <div className="flex items-center text-petsu-blue mb-2">
@@ -95,8 +120,9 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
             <button 
               className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               onClick={() => setShowQuantity(true)}
+              disabled={event.availableTickets === 0}
             >
-              Register Now
+              {event.availableTickets === 0 ? "Sold Out" : "Register Now"}
             </button>
           ) : (
             <div className="flex items-center gap-2">
@@ -105,9 +131,9 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
               >
-                {[1, 2, 3, 4, 5].map((num) => (
+                {Array.from({ length: maxTickets }, (_, i) => i + 1).map((num) => (
                   <option key={num} value={num}>
-                    {num} {num === 1 ? "person" : "people"}
+                    {num} {num === 1 ? "ticket" : "tickets"}
                   </option>
                 ))}
               </select>
@@ -129,6 +155,68 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
   );
 };
 
+const CartSheet = ({ 
+  cartItems, 
+  onRemoveItem, 
+  totalAmount 
+}: { 
+  cartItems: CartItem[]; 
+  onRemoveItem: (eventId: string) => void;
+  totalAmount: number;
+}) => {
+  return (
+    <SheetContent>
+      <SheetHeader>
+        <SheetTitle>Your Tickets</SheetTitle>
+        <SheetDescription>
+          Review your selected tickets before checkout
+        </SheetDescription>
+      </SheetHeader>
+      <div className="mt-8 space-y-4">
+        {cartItems.map((item) => (
+          <div 
+            key={item.eventId}
+            className="flex items-start justify-between p-4 bg-gray-50 rounded-lg"
+          >
+            <div>
+              <h4 className="font-semibold text-petsu-blue">{item.title}</h4>
+              <p className="text-sm text-gray-600">
+                {item.date} at {item.time}
+              </p>
+              <p className="text-sm font-medium mt-1">
+                {item.quantity} {item.quantity === 1 ? 'ticket' : 'tickets'} × ₹{item.price}
+              </p>
+            </div>
+            <button
+              onClick={() => onRemoveItem(item.eventId)}
+              className="text-red-500 hover:text-red-700 p-1"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <SheetFooter className="mt-8">
+        <div className="w-full space-y-4">
+          <div className="flex justify-between items-center font-semibold text-lg">
+            <span>Total Amount</span>
+            <span>₹{totalAmount}</span>
+          </div>
+          <Button 
+            className="w-full bg-petsu-blue hover:bg-petsu-blue/90"
+            onClick={() => {
+              // Implement checkout logic here
+              alert("Proceeding to checkout...");
+            }}
+          >
+            Proceed to Checkout
+          </Button>
+        </div>
+      </SheetFooter>
+    </SheetContent>
+  );
+};
+
 const Events = () => {
   const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>(() => {
@@ -137,27 +225,46 @@ const Events = () => {
   });
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleRegister = (event: Event, quantity: number) => {
+    if (event.availableTickets !== undefined) {
+      if (quantity > event.availableTickets) {
+        toast({
+          title: "Not enough tickets available",
+          description: `Only ${event.availableTickets} tickets left for this event`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Update available tickets
+      setEvents(prevEvents => 
+        prevEvents.map(e => 
+          e.id === event.id 
+            ? { ...e, availableTickets: (e.availableTickets || 0) - quantity }
+            : e
+        )
+      );
+    }
+
     const newItem: CartItem = {
       eventId: event.id,
       title: event.title,
+      date: event.date,
+      time: event.time,
       quantity,
       price: event.price
     };
 
     setCartItems(prev => {
-      // Check if item already exists in cart
       const existingItemIndex = prev.findIndex(item => item.eventId === event.id);
       if (existingItemIndex >= 0) {
-        // Update quantity if item exists
         const updatedItems = [...prev];
         updatedItems[existingItemIndex].quantity += quantity;
         return updatedItems;
-      } else {
-        // Add new item if it doesn't exist
-        return [...prev, newItem];
       }
+      return [...prev, newItem];
     });
 
     toast({
@@ -165,6 +272,32 @@ const Events = () => {
       description: `${quantity} ticket${quantity > 1 ? 's' : ''} for ${event.title}`,
     });
   };
+
+  const handleRemoveFromCart = (eventId: string) => {
+    const removedItem = cartItems.find(item => item.eventId === eventId);
+    if (removedItem) {
+      // Restore available tickets
+      setEvents(prevEvents =>
+        prevEvents.map(e =>
+          e.id === eventId
+            ? { ...e, availableTickets: (e.availableTickets || 0) + removedItem.quantity }
+            : e
+        )
+      );
+
+      setCartItems(prev => prev.filter(item => item.eventId !== eventId));
+      
+      toast({
+        title: "Removed from cart",
+        description: `Removed ${removedItem.title} from your cart`,
+      });
+    }
+  };
+
+  const filteredEvents = events.filter(event =>
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -188,6 +321,8 @@ const Events = () => {
             <input
               type="text"
               placeholder="Search events..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 rounded-full border-2 border-petsu-blue bg-white text-petsu-blue placeholder-petsu-blue/60 focus:outline-none focus:ring-2 focus:ring-petsu-blue"
             />
           </div>
@@ -211,7 +346,7 @@ const Events = () => {
 
       {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {events.map((event) => (
+        {filteredEvents.map((event) => (
           <EventCard 
             key={event.id} 
             event={event} 
@@ -220,29 +355,29 @@ const Events = () => {
         ))}
       </div>
 
-      {/* Footer with cart */}
-      {cartItems.length > 0 && (
-        <motion.div 
-          className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-        >
-          <div className="flex flex-col">
-            <div className="text-lg font-bold">Total: ₹{totalAmount}</div>
-            <div className="text-sm opacity-80">
-              {cartItems.map((item, index) => (
-                <span key={item.eventId}>
-                  {item.quantity}x {item.title}
-                  {index < cartItems.length - 1 ? ', ' : ''}
-                </span>
-              ))}
-            </div>
-          </div>
-          <button className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
-            View Cart ({totalItems})
-          </button>
-        </motion.div>
-      )}
+      {/* Cart Sheet */}
+      <Sheet>
+        <SheetTrigger asChild>
+          {cartItems.length > 0 && (
+            <motion.div 
+              className="fixed bottom-8 right-8 bg-petsu-blue text-white p-4 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-bold">View Cart ({totalItems})</span>
+                <span>₹{totalAmount}</span>
+              </div>
+            </motion.div>
+          )}
+        </SheetTrigger>
+        <CartSheet 
+          cartItems={cartItems}
+          onRemoveItem={handleRemoveFromCart}
+          totalAmount={totalAmount}
+        />
+      </Sheet>
     </div>
   );
 };
