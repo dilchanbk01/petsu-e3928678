@@ -53,54 +53,52 @@ const ProfileMenu = () => {
 };
 
 const LoadingCard = () => (
-  <div className="bg-white rounded-[32px] p-8 shadow-sm animate-pulse">
-    <div className="h-8 bg-gray-100 rounded-lg mb-12 w-2/3"></div>
-    <div className="h-48 bg-gray-100 rounded-lg"></div>
+  <div className="nav-card animate-pulse">
+    <div className="h-8 bg-petsu-blue/10 rounded mb-4"></div>
+    <div className="h-32 bg-petsu-blue/10 rounded"></div>
   </div>
 );
 
 const Index = () => {
   return (
-    <div className="min-h-screen p-8 md:p-12 bg-[#F8F9FF]">
+    <div className="min-h-screen p-6 md:p-8 flex flex-col items-center justify-center relative">
       <ProfileMenu />
       
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          className="w-64 md:w-80 mx-auto mb-16"
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <img 
-            src="/lovable-uploads/1a656558-105f-41b6-b91a-c324a03f1217.png"
-            alt="Petsu"
-            className="w-full h-auto"
-          />
-        </motion.div>
+      <motion.div
+        className="w-64 md:w-80 mb-12"
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <img 
+          src="/lovable-uploads/1a656558-105f-41b6-b91a-c324a03f1217.png"
+          alt="Petsu"
+          className="w-full h-auto"
+        />
+      </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Events" 
-              to="/events"
-              imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
-            />
-          </Suspense>
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Find Vets" 
-              to="/find-vets"
-              imagePath="/lovable-uploads/a3170256-7917-4520-8e32-415c15d0ce0d.png"
-            />
-          </Suspense>
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Pet Essentials" 
-              to="/pet-essentials"
-              imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-            />
-          </Suspense>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Events" 
+            to="/events"
+            imagePath="/lovable-uploads/9b8425df-44cc-4a78-802b-a7fe5d270f3a.png"
+          />
+        </Suspense>
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Find Vets" 
+            to="/find-vets"
+            imagePath="/lovable-uploads/a3170256-7917-4520-8e32-415c15d0ce0d.png"
+          />
+        </Suspense>
+        <Suspense fallback={<LoadingCard />}>
+          <NavCard 
+            title="Pet Essentials" 
+            to="/pet-essentials"
+            imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+          />
+        </Suspense>
       </div>
     </div>
   );
