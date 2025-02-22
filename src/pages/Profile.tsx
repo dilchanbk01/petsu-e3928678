@@ -16,15 +16,22 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-petsu-green p-8">
       <div className="max-w-3xl mx-auto">
-        <Link to="/">
-          <Button 
-            variant="outline" 
-            className="mb-8 bg-white/90 hover:bg-petsu-yellow/20 border-2 border-petsu-blue text-petsu-blue"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
+        <div className="flex justify-between items-center mb-8">
+          <Link to="/">
+            <Button 
+              variant="outline" 
+              className="bg-white/90 hover:bg-petsu-yellow/20 border-2 border-petsu-blue text-petsu-blue"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
+          <img 
+            src="/lovable-uploads/0a2713cc-b038-4b98-9603-83f497104e2e.png" 
+            alt="Petsu Logo" 
+            className="h-12 w-auto"
+          />
+        </div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 border-2 border-petsu-blue shadow-lg">
           <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-petsu-blue/20">
