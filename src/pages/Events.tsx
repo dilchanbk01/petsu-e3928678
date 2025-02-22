@@ -1,7 +1,9 @@
+
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Search, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 // Event type definition
 interface Event {
@@ -13,6 +15,14 @@ interface Event {
   description: string;
   price: number;
   imageUrl: string;
+}
+
+// Cart item interface
+interface CartItem {
+  eventId: string;
+  title: string;
+  quantity: number;
+  price: number;
 }
 
 // Sample events data
@@ -49,47 +59,115 @@ const sampleEvents: Event[] = [
   }
 ];
 
-const EventCard = ({ event }: { event: Event }) => (
-  <motion.div 
-    className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    whileHover={{ y: -5 }}
-    transition={{ duration: 0.3 }}
-  >
-    <img 
-      src={event.imageUrl} 
-      alt={event.title} 
-      className="w-full h-48 object-cover"
-    />
-    <div className="p-6">
-      <h3 className="text-xl font-bold text-petsu-blue mb-2">{event.title}</h3>
-      <div className="flex items-center text-petsu-blue mb-2">
-        <Calendar className="w-4 h-4 mr-2" />
-        <span className="text-sm">{event.date} at {event.time}</span>
+const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
+  const [quantity, setQuantity] = useState(1);
+  const [showQuantity, setShowQuantity] = useState(false);
+
+  return (
+    <motion.div 
+      className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.3 }}
+    >
+      <img 
+        src={event.imageUrl} 
+        alt={event.title} 
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-petsu-blue mb-2">{event.title}</h3>
+        <div className="flex items-center text-petsu-blue mb-2">
+          <Calendar className="w-4 h-4 mr-2" />
+          <span className="text-sm">{event.date} at {event.time}</span>
+        </div>
+        <div className="flex items-center text-petsu-blue mb-4">
+          <MapPin className="w-4 h-4 mr-2" />
+          <span className="text-sm">{event.location}</span>
+        </div>
+        <p className="text-petsu-blue mb-4 text-sm">{event.description}</p>
+        <div className="flex items-center justify-between">
+          <span className="text-petsu-blue font-bold">
+            {event.price === 0 ? "Free" : `₹${event.price}`}
+          </span>
+          {!showQuantity ? (
+            <button 
+              className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              onClick={() => setShowQuantity(true)}
+            >
+              Register Now
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <select
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
+              >
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <option key={num} value={num}>
+                    {num} {num === 1 ? "person" : "people"}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  onRegister(event, quantity);
+                  setShowQuantity(false);
+                  setQuantity(1);
+                }}
+                className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Add to Cart
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex items-center text-petsu-blue mb-4">
-        <MapPin className="w-4 h-4 mr-2" />
-        <span className="text-sm">{event.location}</span>
-      </div>
-      <p className="text-petsu-blue mb-4 text-sm">{event.description}</p>
-      <div className="flex items-center justify-between">
-        <span className="text-petsu-blue font-bold">
-          {event.price === 0 ? "Free" : `₹${event.price}`}
-        </span>
-        <button className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
-          Register Now
-        </button>
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 const Events = () => {
+  const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>(() => {
     const savedEvents = localStorage.getItem('events');
     return savedEvents ? JSON.parse(savedEvents) : sampleEvents;
   });
+  
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const handleRegister = (event: Event, quantity: number) => {
+    const newItem: CartItem = {
+      eventId: event.id,
+      title: event.title,
+      quantity,
+      price: event.price
+    };
+
+    setCartItems(prev => {
+      // Check if item already exists in cart
+      const existingItemIndex = prev.findIndex(item => item.eventId === event.id);
+      if (existingItemIndex >= 0) {
+        // Update quantity if item exists
+        const updatedItems = [...prev];
+        updatedItems[existingItemIndex].quantity += quantity;
+        return updatedItems;
+      } else {
+        // Add new item if it doesn't exist
+        return [...prev, newItem];
+      }
+    });
+
+    toast({
+      title: "Added to cart!",
+      description: `${quantity} ticket${quantity > 1 ? 's' : ''} for ${event.title}`,
+    });
+  };
+
+  const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen p-8">
@@ -134,21 +212,37 @@ const Events = () => {
       {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {events.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard 
+            key={event.id} 
+            event={event} 
+            onRegister={handleRegister}
+          />
         ))}
       </div>
 
       {/* Footer with cart */}
-      <motion.div 
-        className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-      >
-        <div className="text-lg font-bold">Total: ₹49</div>
-        <button className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
-          View Cart (1)
-        </button>
-      </motion.div>
+      {cartItems.length > 0 && (
+        <motion.div 
+          className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+        >
+          <div className="flex flex-col">
+            <div className="text-lg font-bold">Total: ₹{totalAmount}</div>
+            <div className="text-sm opacity-80">
+              {cartItems.map((item, index) => (
+                <span key={item.eventId}>
+                  {item.quantity}x {item.title}
+                  {index < cartItems.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+          <button className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
+            View Cart ({totalItems})
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };
