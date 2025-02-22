@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { motion } from "framer-motion"
 import Index from "@/pages/Index"
 import Profile from "@/pages/Profile"
 import Events from "@/pages/Events"
@@ -23,11 +24,35 @@ const queryClient = new QueryClient({
   },
 });
 
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-white">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col items-center gap-4"
+    >
+      <motion.div 
+        className="w-12 h-12 border-4 border-petsu-yellow rounded-full border-t-transparent"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.img 
+        src="/lovable-uploads/1a656558-105f-41b6-b91a-c324a03f1217.png"
+        alt="Petsu"
+        className="w-32 h-auto"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.5 }}
+      />
+    </motion.div>
+  </div>
+);
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
   
   if (!session) {
