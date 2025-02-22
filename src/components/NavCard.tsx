@@ -7,10 +7,11 @@ interface NavCardProps {
   title: string;
   imagePath: string;
   to: string;
+  external?: boolean;
 }
 
-const NavCard = ({ title, imagePath, to }: NavCardProps) => (
-  <Link to={to} className="h-full">
+const NavCard = ({ title, imagePath, to, external }: NavCardProps) => {
+  const CardContent = (
     <motion.div
       className="nav-card h-full"
       initial={{ opacity: 0, y: 20 }}
@@ -32,7 +33,21 @@ const NavCard = ({ title, imagePath, to }: NavCardProps) => (
         />
       </div>
     </motion.div>
-  </Link>
-);
+  );
+
+  if (external) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" className="h-full">
+        {CardContent}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={to} className="h-full">
+      {CardContent}
+    </Link>
+  );
+};
 
 export default NavCard;

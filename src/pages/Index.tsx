@@ -102,8 +102,9 @@ const Index = () => {
             <Suspense fallback={<LoadingCard />}>
               <NavCard 
                 title="Pet Essentials" 
-                to="/pet-essentials"
+                to="https://supertails.com/"
                 imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+                external
               />
             </Suspense>
           </div>
@@ -128,8 +129,9 @@ const Index = () => {
           <Suspense fallback={<LoadingCard />}>
             <NavCard 
               title="Pet Essentials" 
-              to="/pet-essentials"
+              to="https://supertails.com/"
               imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+              external
             />
           </Suspense>
         </div>
