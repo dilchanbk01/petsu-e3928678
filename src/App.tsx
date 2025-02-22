@@ -1,7 +1,9 @@
 
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client";
 import Index from "@/pages/Index"
 import Profile from "@/pages/Profile"
 import Events from "@/pages/Events"
