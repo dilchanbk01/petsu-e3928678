@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Search, Plus, Minus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,39 @@ interface CartItem {
   quantity: number;
   price: number;
 }
+
+const sampleEvents: Event[] = [
+  {
+    id: "1",
+    title: "Pet Adoption Day",
+    date: "2024-03-20",
+    time: "10:00 AM",
+    location: "Central Park",
+    description: "Find your perfect furry companion at our adoption event.",
+    price: 0,
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+  },
+  {
+    id: "2",
+    title: "Dog Training Workshop",
+    date: "2024-03-22",
+    time: "2:00 PM",
+    location: "Pet Training Center",
+    description: "Learn essential training techniques from expert trainers.",
+    price: 499,
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+  },
+  {
+    id: "3",
+    title: "Pet Health Check-up Camp",
+    date: "2024-03-25",
+    time: "9:00 AM",
+    location: "City Vet Clinic",
+    description: "Free health check-up for your pets by experienced veterinarians.",
+    price: 0,
+    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
+  }
+];
 
 const QuantitySelector = ({ quantity, setQuantity }: { quantity: number; setQuantity: (n: number) => void }) => {
   return (
@@ -115,6 +148,7 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
 
 const Events = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>(() => {
     const savedEvents = localStorage.getItem('events');
     return savedEvents ? JSON.parse(savedEvents) : sampleEvents;
@@ -145,6 +179,26 @@ const Events = () => {
       title: "Added to cart!",
       description: `${quantity} ticket${quantity > 1 ? 's' : ''} for ${event.title}`,
     });
+  };
+
+  const handleCheckout = () => {
+    const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+    const newTickets = cartItems.map(item => ({
+      ...item,
+      purchaseDate: new Date().toISOString(),
+      status: 'active'
+    }));
+    
+    localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ...newTickets]));
+    
+    setCartItems([]);
+    
+    toast({
+      title: "Purchase Successful!",
+      description: "Your tickets have been added to My Tickets.",
+    });
+    
+    navigate('/my-tickets');
   };
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -215,9 +269,12 @@ const Events = () => {
               ))}
             </div>
           </div>
-          <button className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
-            View Cart ({totalItems})
-          </button>
+          <Button
+            onClick={handleCheckout}
+            className="bg-petsu-yellow text-petsu-blue px-6 py-2 rounded-full font-bold hover:opacity-90"
+          >
+            Checkout ({totalItems} {totalItems === 1 ? 'ticket' : 'tickets'})
+          </Button>
         </motion.div>
       )}
     </div>
