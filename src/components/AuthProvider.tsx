@@ -2,14 +2,20 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthContextType {
   session: Session | null;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  session: null, 
+  loading: true,
+  signOut: async () => {} 
+});
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -37,15 +43,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (!session) {
-        navigate('/auth');
+        navigate('/');
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setSession(null);
+      navigate('/');
+      toast.success('Successfully signed out');
+    } catch (error: any) {
+      toast.error('Error signing out');
+      console.error('Error:', error.message);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
