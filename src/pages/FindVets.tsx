@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -296,7 +295,8 @@ const FindVets = () => {
   const fetchVets = async () => {
     const { data: vets, error: vetsError } = await supabase
       .from('vets')
-      .select('*');
+      .select('*')
+      .eq('approval_status', 'approved');
     
     if (vetsError) throw vetsError;
 

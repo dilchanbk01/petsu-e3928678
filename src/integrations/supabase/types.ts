@@ -9,6 +9,21 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           amount: number
@@ -96,6 +111,7 @@ export type Database = {
       }
       events: {
         Row: {
+          approval_status: string
           available_tickets: number | null
           created_at: string
           creator_id: string | null
@@ -111,6 +127,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
           available_tickets?: number | null
           created_at?: string
           creator_id?: string | null
@@ -126,6 +143,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
           available_tickets?: number | null
           created_at?: string
           creator_id?: string | null
@@ -206,6 +224,7 @@ export type Database = {
       }
       vets: {
         Row: {
+          approval_status: string
           consultation_fee: number
           created_at: string
           experience: string | null
@@ -220,6 +239,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
           consultation_fee: number
           created_at?: string
           experience?: string | null
@@ -234,6 +254,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
           consultation_fee?: number
           created_at?: string
           experience?: string | null
