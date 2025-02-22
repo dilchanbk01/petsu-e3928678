@@ -1,11 +1,10 @@
-
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
-// Event type definition
 interface Event {
   id: string;
   title: string;
@@ -17,7 +16,6 @@ interface Event {
   imageUrl: string;
 }
 
-// Cart item interface
 interface CartItem {
   eventId: string;
   title: string;
@@ -25,39 +23,31 @@ interface CartItem {
   price: number;
 }
 
-// Sample events data
-const sampleEvents: Event[] = [
-  {
-    id: "1",
-    title: "Pet Adoption Day",
-    date: "2024-03-20",
-    time: "10:00 AM",
-    location: "Central Park",
-    description: "Find your perfect furry companion at our adoption event.",
-    price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
-  },
-  {
-    id: "2",
-    title: "Dog Training Workshop",
-    date: "2024-03-22",
-    time: "2:00 PM",
-    location: "Pet Training Center",
-    description: "Learn essential training techniques from expert trainers.",
-    price: 49,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
-  },
-  {
-    id: "3",
-    title: "Pet Health Check-up Camp",
-    date: "2024-03-25",
-    time: "9:00 AM",
-    location: "City Vet Clinic",
-    description: "Free health check-up for your pets by experienced veterinarians.",
-    price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png"
-  }
-];
+const QuantitySelector = ({ quantity, setQuantity }: { quantity: number; setQuantity: (n: number) => void }) => {
+  return (
+    <div className="flex items-center border-2 border-petsu-blue rounded-lg overflow-hidden">
+      <Button
+        type="button"
+        variant="ghost"
+        className="p-2 hover:bg-petsu-blue/10"
+        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+      >
+        <Minus className="h-4 w-4 text-petsu-blue" />
+      </Button>
+      <div className="px-4 py-1 text-petsu-blue font-semibold min-w-[80px] text-center">
+        {quantity} {quantity === 1 ? 'person' : 'people'}
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        className="p-2 hover:bg-petsu-blue/10"
+        onClick={() => setQuantity(Math.min(5, quantity + 1))}
+      >
+        <Plus className="h-4 w-4 text-petsu-blue" />
+      </Button>
+    </div>
+  );
+};
 
 const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
   const [quantity, setQuantity] = useState(1);
@@ -92,36 +82,30 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
             {event.price === 0 ? "Free" : `₹${event.price}`}
           </span>
           {!showQuantity ? (
-            <button 
-              className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            <Button 
+              className="bg-petsu-blue text-white hover:bg-petsu-blue/90"
               onClick={() => setShowQuantity(true)}
             >
               Register Now
-            </button>
+            </Button>
           ) : (
-            <div className="flex items-center gap-2">
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
-              >
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <option key={num} value={num}>
-                    {num} {num === 1 ? "person" : "people"}
-                  </option>
-                ))}
-              </select>
-              <button
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
+              <Button
+                className="bg-petsu-blue text-white hover:bg-petsu-blue/90 whitespace-nowrap"
                 onClick={() => {
                   onRegister(event, quantity);
                   setShowQuantity(false);
                   setQuantity(1);
                 }}
-                className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               >
                 Add to Cart
-              </button>
-            </div>
+              </Button>
+            </motion.div>
           )}
         </div>
       </div>
@@ -147,15 +131,12 @@ const Events = () => {
     };
 
     setCartItems(prev => {
-      // Check if item already exists in cart
       const existingItemIndex = prev.findIndex(item => item.eventId === event.id);
       if (existingItemIndex >= 0) {
-        // Update quantity if item exists
         const updatedItems = [...prev];
         updatedItems[existingItemIndex].quantity += quantity;
         return updatedItems;
       } else {
-        // Add new item if it doesn't exist
         return [...prev, newItem];
       }
     });
@@ -171,7 +152,6 @@ const Events = () => {
 
   return (
     <div className="min-h-screen p-8">
-      {/* Header with back button and search */}
       <div className="flex justify-between items-center mb-8">
         <Link to="/">
           <motion.div
@@ -200,7 +180,6 @@ const Events = () => {
         </div>
       </div>
 
-      {/* Main heading */}
       <motion.h1 
         className="text-4xl font-bold text-petsu-yellow mb-8"
         initial={{ opacity: 0, y: 20 }}
@@ -209,7 +188,6 @@ const Events = () => {
         Upcoming Pet Events
       </motion.h1>
 
-      {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {events.map((event) => (
           <EventCard 
@@ -220,7 +198,6 @@ const Events = () => {
         ))}
       </div>
 
-      {/* Footer with cart */}
       {cartItems.length > 0 && (
         <motion.div 
           className="fixed bottom-0 left-0 right-0 bg-petsu-blue text-white p-4 flex justify-between items-center"
