@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          amount: number
+          appointment_time: string
+          created_at: string
+          id: string
+          payment_status: string
+          session_type: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          vet_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_time: string
+          created_at?: string
+          id?: string
+          payment_status?: string
+          session_type: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          vet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_time?: string
+          created_at?: string
+          id?: string
+          payment_status?: string
+          session_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          vet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_vet_id_fkey"
+            columns: ["vet_id"]
+            isOneToOne: false
+            referencedRelation: "vets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

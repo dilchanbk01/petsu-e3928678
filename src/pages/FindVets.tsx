@@ -11,19 +11,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { VetWithAvailability } from "@/types/vet";
 import { useQuery } from "@tanstack/react-query";
 
-interface VetCardProps {
-  vet: VetWithAvailability;
+interface ConsultationDetailsProps { 
+  selectedSlot: string;
+  consultationFee: number;
+  onConfirm: (sessionType: 'video' | 'chat') => Promise<void>;
+  isLoading: boolean;
 }
 
 const ConsultationDetails = ({ 
   selectedSlot, 
   consultationFee,
-  onConfirm 
-}: { 
-  selectedSlot: string;
-  consultationFee: number;
-  onConfirm: () => void;
-}) => (
+  onConfirm,
+  isLoading
+}: ConsultationDetailsProps) => (
   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
     <h3 className="font-semibold text-lg mb-4">Consultation Details</h3>
     <div className="space-y-2 mb-4">
@@ -36,31 +36,98 @@ const ConsultationDetails = ({
         <span className="font-medium">${consultationFee}</span>
       </div>
     </div>
-    <Button 
-      onClick={onConfirm}
-      className="w-full bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-    >
-      <Check className="w-4 h-4 mr-2" />
-      Confirm Booking
-    </Button>
+    <div className="flex gap-3">
+      <Button 
+        disabled={isLoading}
+        onClick={() => onConfirm('video')}
+        className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
+      >
+        <Video className="w-4 h-4 mr-2" />
+        Book Video Call
+      </Button>
+      <Button 
+        disabled={isLoading}
+        onClick={() => onConfirm('chat')}
+        variant="outline" 
+        className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
+      >
+        <MessageSquare className="w-4 h-4 mr-2" />
+        Book Chat
+      </Button>
+    </div>
   </div>
 );
 
-const VetCard = ({ vet }: VetCardProps) => {
+const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isBooked, setIsBooked] = useState(false);
   const [showConsultation, setShowConsultation] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
 
-  const handleBook = () => {
-    if (selectedSlot) {
+  const handleBook = async (sessionType: 'video' | 'chat') => {
+    if (!selectedSlot) return;
+
+    setIsBooking(true);
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
+        toast.error("Please log in to book an appointment");
+        return;
+      }
+
+      const appointmentTime = new Date();
+      const [hours, minutes] = selectedSlot.split(':');
+      appointmentTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      const { error } = await supabase
+        .from('appointments')
+        .insert({
+          vet_id: vet.id,
+          user_id: user.id,
+          appointment_time: appointmentTime.toISOString(),
+          amount: vet.consultation_fee,
+          session_type: sessionType,
+        });
+
+      if (error) throw error;
+
       setIsBooked(true);
       toast.success("Appointment booked successfully!");
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast.error("Failed to book appointment. Please try again.");
+    } finally {
+      setIsBooking(false);
     }
   };
 
-  const handleStartConsultation = () => {
+  const handleStartConsultation = async (sessionType: 'video' | 'chat') => {
     setShowConsultation(true);
-    toast.success("Starting consultation...");
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
+        toast.error("Please log in to start a consultation");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('appointments')
+        .insert({
+          vet_id: vet.id,
+          user_id: user.id,
+          appointment_time: new Date().toISOString(),
+          amount: vet.consultation_fee,
+          session_type: sessionType,
+          status: 'confirmed',
+        });
+
+      if (error) throw error;
+      
+      toast.success(`Starting ${sessionType} consultation...`);
+    } catch (error) {
+      console.error('Consultation error:', error);
+      toast.error("Failed to start consultation. Please try again.");
+    }
   };
 
   return (
@@ -131,7 +198,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                       <div className="flex gap-3">
                         <Button 
                           className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-                          onClick={handleStartConsultation}
+                          onClick={() => handleStartConsultation('video')}
                         >
                           <Video className="w-4 h-4 mr-2" />
                           Start Video Call
@@ -139,6 +206,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                         <Button 
                           variant="outline" 
                           className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
+                          onClick={() => handleStartConsultation('chat')}
                         >
                           <MessageSquare className="w-4 h-4 mr-2" />
                           Start Chat
@@ -175,6 +243,7 @@ const VetCard = ({ vet }: VetCardProps) => {
                     selectedSlot={selectedSlot}
                     consultationFee={vet.consultation_fee}
                     onConfirm={handleBook}
+                    isLoading={isBooking}
                   />
                 )}
               </>

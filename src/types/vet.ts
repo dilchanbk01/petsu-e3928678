@@ -26,3 +26,16 @@ export interface VetAvailability {
 export interface VetWithAvailability extends Vet {
   availability: VetAvailability;
 }
+
+export interface Appointment {
+  id: string;
+  vet_id: string;
+  user_id: string;
+  appointment_time: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_status: 'pending' | 'paid' | 'refunded';
+  amount: number;
+  session_type: 'video' | 'chat';
+  created_at: string;
+  updated_at: string;
+}
