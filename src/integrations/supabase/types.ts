@@ -312,6 +312,49 @@ export type Database = {
         }
         Returns: string
       }
+      get_admin_role: {
+        Args: {
+          user_id: string
+        }
+        Returns: string
+      }
+      get_pending_events: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approval_status: string
+          available_tickets: number | null
+          created_at: string
+          creator_id: string | null
+          date: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          price: number
+          time: string
+          title: string
+          type: string
+          updated_at: string
+        }[]
+      }
+      get_pending_vets: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approval_status: string
+          consultation_fee: number
+          created_at: string
+          experience: string | null
+          id: string
+          image_url: string | null
+          languages: string[] | null
+          location: string
+          name: string
+          pet_types: string[] | null
+          rating: number | null
+          specialty: string
+          updated_at: string
+        }[]
+      }
       hash_admin_password: {
         Args: {
           password: string
@@ -323,6 +366,20 @@ export type Database = {
           user_id: string
         }
         Returns: boolean
+      }
+      update_event_status: {
+        Args: {
+          event_id: string
+          new_status: string
+        }
+        Returns: undefined
+      }
+      update_vet_status: {
+        Args: {
+          vet_id: string
+          new_status: string
+        }
+        Returns: undefined
       }
       verify_admin_password: {
         Args: {
