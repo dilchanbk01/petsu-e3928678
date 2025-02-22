@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
@@ -561,12 +561,41 @@ const Events = () => {
             <ArrowLeft className="w-5 h-5 text-petsu-blue" />
           </motion.div>
         </Link>
-        <Link to="/create-event">
-          <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" />
-            <span className="text-sm">Create Event</span>
-          </button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <motion.button 
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
+                  cartItems.length > 0 
+                    ? 'bg-petsu-blue text-white hover:opacity-90' 
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                whileHover={cartItems.length > 0 ? { scale: 1.02 } : {}}
+                initial={false}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {cartItems.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{totalItems} items</span>
+                    <span className="text-sm">•</span>
+                    <span className="text-sm">₹{totalAmount}</span>
+                  </div>
+                )}
+              </motion.button>
+            </SheetTrigger>
+            <CartSheet 
+              cartItems={cartItems}
+              onRemoveItem={handleRemoveFromCart}
+              totalAmount={totalAmount}
+            />
+          </Sheet>
+          <Link to="/create-event">
+            <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">Create Event</span>
+            </button>
+          </Link>
+        </div>
       </div>
 
       <motion.h1 
