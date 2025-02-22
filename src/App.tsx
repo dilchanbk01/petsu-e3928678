@@ -10,8 +10,6 @@ import PetEssentials from "@/pages/PetEssentials"
 import CreateEvent from "@/pages/CreateEvent"
 import VetDashboard from "@/pages/VetDashboard"
 import VetOnboarding from "@/pages/VetOnboarding"
-import AdminDashboard from "@/pages/AdminDashboard"
-import AdminAuth from "@/pages/AdminAuth"
 import Auth from "@/pages/Auth"
 import NotFound from "@/pages/NotFound"
 import { AuthProvider, useAuth } from "@/components/AuthProvider"
@@ -42,7 +40,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => (
   <Routes>
     <Route path="/auth" element={<Auth />} />
-    <Route path="/admin_auth" element={<AdminAuth />} />
     <Route
       path="/"
       element={
@@ -104,14 +101,6 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <VetOnboarding />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/admin"
-      element={
-        <ProtectedRoute>
-          <AdminDashboard />
         </ProtectedRoute>
       }
     />
