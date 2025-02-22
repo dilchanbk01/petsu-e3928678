@@ -2,6 +2,7 @@
 import { ArrowRight, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +11,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { lazy, Suspense } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const NavCard = lazy(() => import("@/components/NavCard"));
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
   const userName = "John Doe"; // This could be fetched from your auth state
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Signed out successfully");
+      navigate('/auth');
+    } catch (error) {
+      toast.error("Error signing out");
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <div className="absolute top-6 right-6">
@@ -42,7 +55,10 @@ const ProfileMenu = () => {
           <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
             My Tickets
           </DropdownMenuItem>
-          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
+          <DropdownMenuItem 
+            className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium"
+            onClick={handleSignOut}
+          >
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -167,3 +183,4 @@ const Index = () => {
 };
 
 export default Index;
+
