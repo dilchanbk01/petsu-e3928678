@@ -81,7 +81,7 @@ const Index = () => {
         {/* Mobile layout */}
         <div className="md:hidden grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="h-[200px]"> {/* Square container for Events */}
+            <div className="h-[200px]">
               <Suspense fallback={<LoadingCard />}>
                 <NavCard 
                   title="Events" 
@@ -90,7 +90,7 @@ const Index = () => {
                 />
               </Suspense>
             </div>
-            <div className="h-[200px]"> {/* Square container for Find Vets */}
+            <div className="h-[200px]">
               <Suspense fallback={<LoadingCard />}>
                 <NavCard 
                   title="Find Vets" 
@@ -100,7 +100,7 @@ const Index = () => {
               </Suspense>
             </div>
           </div>
-          <div className="h-[160px]"> {/* Rectangle container for Pet Essentials */}
+          <div className="h-[160px]">
             <Suspense fallback={<LoadingCard />}>
               <NavCard 
                 title="Pet Essentials" 
@@ -136,6 +136,34 @@ const Index = () => {
           </Suspense>
         </div>
       </div>
+
+      {/* Vet Onboarding CTA Section */}
+      <motion.div 
+        className="w-full max-w-4xl mt-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="bg-gradient-to-r from-petsu-blue to-petsu-blue/80 rounded-2xl p-6 md:p-8 text-white">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">Are you a veterinarian?</h2>
+              <p className="text-white/90 mb-4">Join our network of professional vets and connect with pet owners.</p>
+              <Link to="/vet-onboarding">
+                <Button className="bg-white text-petsu-blue hover:bg-petsu-yellow">
+                  Join as a Vet Partner
+                </Button>
+              </Link>
+            </div>
+            <div className="hidden md:block">
+              <img 
+                src="/lovable-uploads/c8691e4f-1095-4f6e-ae4b-a47d88f7384a.png" 
+                alt="Vet Partner" 
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
