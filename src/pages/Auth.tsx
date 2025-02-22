@@ -31,16 +31,14 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
+          redirectTo: `${window.location.origin}/auth`,
+          scopes: 'email profile',
         }
       });
       
       if (error) throw error;
     } catch (error: any) {
+      console.error('Google auth error:', error);
       toast.error(error.message || "Error connecting to Google");
     }
   };
