@@ -1,3 +1,4 @@
+
 import { ArrowRight, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -79,7 +80,7 @@ const Index = () => {
         {/* Mobile layout */}
         <div className="md:hidden grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="h-[200px]">
+            <div className="aspect-square">
               <Suspense fallback={<LoadingCard />}>
                 <NavCard 
                   title="Events" 
@@ -88,7 +89,7 @@ const Index = () => {
                 />
               </Suspense>
             </div>
-            <div className="h-[200px]">
+            <div className="aspect-square">
               <Suspense fallback={<LoadingCard />}>
                 <NavCard 
                   title="Find Vets" 
@@ -103,7 +104,7 @@ const Index = () => {
               <NavCard 
                 title="Pet Essentials" 
                 to="/pet-essentials"
-                imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
+                imagePath="/lovable-uploads/bd02a697-b0c3-489a-8f61-119468f1a724.png"
               />
             </Suspense>
           </div>
@@ -111,27 +112,33 @@ const Index = () => {
 
         {/* Desktop layout */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Events" 
-              to="/events"
-              imagePath="/lovable-uploads/a6a449a5-6229-468c-b139-1e521c756165.png"
-            />
-          </Suspense>
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Find Vets" 
-              to="/find-vets"
-              imagePath="/lovable-uploads/a3170256-7917-4520-8e32-415c15d0ce0d.png"
-            />
-          </Suspense>
-          <Suspense fallback={<LoadingCard />}>
-            <NavCard 
-              title="Pet Essentials" 
-              to="/pet-essentials"
-              imagePath="/lovable-uploads/0f7eef24-076a-498b-8b25-6693ba92d01c.png"
-            />
-          </Suspense>
+          <div className="aspect-square">
+            <Suspense fallback={<LoadingCard />}>
+              <NavCard 
+                title="Events" 
+                to="/events"
+                imagePath="/lovable-uploads/a6a449a5-6229-468c-b139-1e521c756165.png"
+              />
+            </Suspense>
+          </div>
+          <div className="aspect-square">
+            <Suspense fallback={<LoadingCard />}>
+              <NavCard 
+                title="Find Vets" 
+                to="/find-vets"
+                imagePath="/lovable-uploads/a3170256-7917-4520-8e32-415c15d0ce0d.png"
+              />
+            </Suspense>
+          </div>
+          <div className="aspect-square">
+            <Suspense fallback={<LoadingCard />}>
+              <NavCard 
+                title="Pet Essentials" 
+                to="/pet-essentials"
+                imagePath="/lovable-uploads/bd02a697-b0c3-489a-8f61-119468f1a724.png"
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
 

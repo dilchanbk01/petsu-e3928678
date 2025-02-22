@@ -22,14 +22,14 @@ const NavCard = ({ title, imagePath, to, external }: NavCardProps) => {
       <div className="nav-card-title text-lg font-semibold">
         {title} <ArrowRight className="w-4 h-4" />
       </div>
-      <div className="flex items-center justify-center p-2">
+      <div className="flex items-center justify-center p-1">
         <img 
           src={imagePath} 
           alt={title} 
-          className="w-56 h-56 md:w-40 md:h-40 object-contain"
+          className="w-48 h-48 md:w-36 md:h-36 object-contain"
           loading="lazy"
-          width={224}
-          height={224}
+          width={192}
+          height={192}
         />
       </div>
     </motion.div>
