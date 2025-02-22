@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["admin_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["admin_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           amount: number
@@ -55,6 +91,95 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_registrations: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          quantity: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quantity: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          approval_status: string
+          available_tickets: number | null
+          created_at: string
+          creator_id: string | null
+          date: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          price: number
+          time: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          approval_status?: string
+          available_tickets?: number | null
+          created_at?: string
+          creator_id?: string | null
+          date: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          price?: number
+          time: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          approval_status?: string
+          available_tickets?: number | null
+          created_at?: string
+          creator_id?: string | null
+          date?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          price?: number
+          time?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -120,6 +245,7 @@ export type Database = {
       }
       vets: {
         Row: {
+          approval_status: string
           consultation_fee: number
           created_at: string
           experience: string | null
@@ -128,11 +254,13 @@ export type Database = {
           languages: string[] | null
           location: string
           name: string
+          pet_types: string[] | null
           rating: number | null
           specialty: string
           updated_at: string
         }
         Insert: {
+          approval_status?: string
           consultation_fee: number
           created_at?: string
           experience?: string | null
@@ -141,11 +269,13 @@ export type Database = {
           languages?: string[] | null
           location: string
           name: string
+          pet_types?: string[] | null
           rating?: number | null
           specialty: string
           updated_at?: string
         }
         Update: {
+          approval_status?: string
           consultation_fee?: number
           created_at?: string
           experience?: string | null
@@ -154,6 +284,7 @@ export type Database = {
           languages?: string[] | null
           location?: string
           name?: string
+          pet_types?: string[] | null
           rating?: number | null
           specialty?: string
           updated_at?: string
@@ -165,10 +296,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      admin_role: "super_admin" | "event_admin" | "vet_admin"
     }
     CompositeTypes: {
       [_ in never]: never
