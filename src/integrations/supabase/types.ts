@@ -56,6 +56,92 @@ export type Database = {
           },
         ]
       }
+      event_registrations: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          quantity: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quantity: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          available_tickets: number | null
+          created_at: string
+          creator_id: string | null
+          date: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          price: number
+          time: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          available_tickets?: number | null
+          created_at?: string
+          creator_id?: string | null
+          date: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          price?: number
+          time: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          available_tickets?: number | null
+          created_at?: string
+          creator_id?: string | null
+          date?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          price?: number
+          time?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

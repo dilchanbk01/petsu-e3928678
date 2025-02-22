@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Search, Plus, Trash2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import {
   Sheet,
   SheetClose,
@@ -32,9 +34,10 @@ interface Event {
   location: string;
   description: string;
   price: number;
-  imageUrl: string;
-  availableTickets?: number;
+  image_url: string;
+  available_tickets: number;
   type: string;
+  creator_id: string;
 }
 
 interface CartItem {
@@ -45,45 +48,6 @@ interface CartItem {
   quantity: number;
   price: number;
 }
-
-const sampleEvents: Event[] = [
-  {
-    id: "1",
-    title: "Pet Adoption Day",
-    date: "2024-03-20",
-    time: "10:00 AM",
-    location: "Central Park",
-    description: "Find your perfect furry companion at our adoption event.",
-    price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 50,
-    type: "Adoption"
-  },
-  {
-    id: "2",
-    title: "Dog Training Workshop",
-    date: "2024-03-22",
-    time: "2:00 PM",
-    location: "Pet Training Center",
-    description: "Learn essential training techniques from expert trainers.",
-    price: 49,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 20,
-    type: "Training"
-  },
-  {
-    id: "3",
-    title: "Pet Health Check-up Camp",
-    date: "2024-03-25",
-    time: "9:00 AM",
-    location: "City Vet Clinic",
-    description: "Free health check-up for your pets by experienced veterinarians.",
-    price: 0,
-    imageUrl: "/lovable-uploads/88a72a86-7172-46fe-92a9-7b28369dcfbd.png",
-    availableTickets: 100,
-    type: "Health"
-  }
-];
 
 const FilterBar = ({ 
   onFilterChange 
@@ -234,7 +198,7 @@ const FilterBar = ({
 const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Event, quantity: number) => void }) => {
   const [quantity, setQuantity] = useState(1);
   const [showQuantity, setShowQuantity] = useState(false);
-  const maxTickets = Math.min(event.availableTickets || 5, 5);
+  const maxTickets = Math.min(event.available_tickets || 5, 5);
 
   return (
     <motion.div 
@@ -246,13 +210,13 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
     >
       <div className="relative">
         <img 
-          src={event.imageUrl} 
+          src={event.image_url} 
           alt={event.title} 
           className="w-full h-48 object-cover"
         />
-        {event.availableTickets !== undefined && event.availableTickets <= 10 && (
+        {event.available_tickets !== undefined && event.available_tickets <= 10 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
-            Only {event.availableTickets} tickets left!
+            Only {event.available_tickets} tickets left!
           </div>
         )}
       </div>
@@ -275,9 +239,9 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
             <button 
               className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               onClick={() => setShowQuantity(true)}
-              disabled={event.availableTickets === 0}
+              disabled={event.available_tickets === 0}
             >
-              {event.availableTickets === 0 ? "Sold Out" : "Register Now"}
+              {event.available_tickets === 0 ? "Sold Out" : "Register Now"}
             </button>
           ) : (
             <div className="flex items-center gap-2">
@@ -372,12 +336,9 @@ const CartSheet = ({
 };
 
 const Events = () => {
+  const { session } = useAuth();
   const { toast } = useToast();
-  const [events, setEvents] = useState<Event[]>(() => {
-    const savedEvents = localStorage.getItem('events');
-    return savedEvents ? JSON.parse(savedEvents) : sampleEvents;
-  });
-  
+  const [events, setEvents] = useState<Event[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -385,71 +346,164 @@ const Events = () => {
     showFreeOnly: false,
     eventType: "all"
   });
+  const [loading, setLoading] = useState(true);
 
-  const handleRegister = (event: Event, quantity: number) => {
-    if (event.availableTickets !== undefined) {
-      if (quantity > event.availableTickets) {
-        toast({
-          title: "Not enough tickets available",
-          description: `Only ${event.availableTickets} tickets left for this event`,
-          variant: "destructive"
-        });
-        return;
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) {
+        throw error;
       }
-      
-      setEvents(prevEvents => 
-        prevEvents.map(e => 
-          e.id === event.id 
-            ? { ...e, availableTickets: (e.availableTickets || 0) - quantity }
-            : e
-        )
-      );
+
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load events. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-
-    const newItem: CartItem = {
-      eventId: event.id,
-      title: event.title,
-      date: event.date,
-      time: event.time,
-      quantity,
-      price: event.price
-    };
-
-    setCartItems(prev => {
-      const existingItemIndex = prev.findIndex(item => item.eventId === event.id);
-      if (existingItemIndex >= 0) {
-        const updatedItems = [...prev];
-        updatedItems[existingItemIndex].quantity += quantity;
-        return updatedItems;
-      }
-      return [...prev, newItem];
-    });
-
-    toast({
-      title: "Added to cart!",
-      description: `${quantity} ticket${quantity > 1 ? 's' : ''} for ${event.title}`,
-    });
   };
 
-  const handleRemoveFromCart = (eventId: string) => {
-    const removedItem = cartItems.find(item => item.eventId === eventId);
-    if (removedItem) {
-      setEvents(prevEvents =>
-        prevEvents.map(e =>
-          e.id === eventId
-            ? { ...e, availableTickets: (e.availableTickets || 0) + removedItem.quantity }
-            : e
-        )
-      );
-
-      setCartItems(prev => prev.filter(item => item.eventId !== eventId));
-      
+  const handleRegister = async (event: Event, quantity: number) => {
+    if (!session) {
       toast({
-        title: "Removed from cart",
-        description: `Removed ${removedItem.title} from your cart`,
+        title: "Authentication required",
+        description: "Please log in to register for events",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (quantity > event.available_tickets) {
+      toast({
+        title: "Not enough tickets available",
+        description: `Only ${event.available_tickets} tickets left for this event`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('event_registrations')
+        .insert({
+          event_id: event.id,
+          user_id: session.user.id,
+          quantity,
+          status: 'pending'
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      const newItem: CartItem = {
+        eventId: event.id,
+        title: event.title,
+        date: event.date,
+        time: event.time,
+        quantity,
+        price: event.price
+      };
+
+      setCartItems(prev => [...prev, newItem]);
+      
+      await fetchEvents();
+
+      toast({
+        title: "Added to cart!",
+        description: `${quantity} ticket${quantity > 1 ? 's' : ''} for ${event.title}`,
+      });
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add tickets to cart. Please try again.",
+        variant: "destructive"
       });
     }
   };
+
+  const handleRemoveFromCart = async (eventId: string) => {
+    if (!session) return;
+
+    try {
+      const { error } = await supabase
+        .from('event_registrations')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', session.user.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      setCartItems(prev => prev.filter(item => item.eventId !== eventId));
+      await fetchEvents();
+
+      toast({
+        title: "Removed from cart",
+        description: "The tickets have been removed from your cart",
+      });
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove tickets from cart. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  useEffect(() => {
+    const loadCartItems = async () => {
+      if (!session) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('event_registrations')
+          .select(`
+            *,
+            events:event_id (
+              title,
+              date,
+              time,
+              price
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .eq('status', 'pending');
+
+        if (error) throw error;
+
+        const cartItems: CartItem[] = data.map(registration => ({
+          eventId: registration.event_id,
+          title: registration.events.title,
+          date: registration.events.date,
+          time: registration.events.time,
+          quantity: registration.quantity,
+          price: registration.events.price
+        }));
+
+        setCartItems(cartItems);
+      } catch (error) {
+        console.error('Error loading cart:', error);
+      }
+    };
+
+    loadCartItems();
+  }, [session]);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = 
@@ -487,6 +541,14 @@ const Events = () => {
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4 sm:p-6 md:p-8 flex items-center justify-center">
+        <div className="text-petsu-blue">Loading events...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8">
