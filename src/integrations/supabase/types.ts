@@ -214,6 +214,7 @@ export type Database = {
           languages: string[] | null
           location: string
           name: string
+          pet_types: string[] | null
           rating: number | null
           specialty: string
           updated_at: string
@@ -227,6 +228,7 @@ export type Database = {
           languages?: string[] | null
           location: string
           name: string
+          pet_types?: string[] | null
           rating?: number | null
           specialty: string
           updated_at?: string
@@ -240,6 +242,7 @@ export type Database = {
           languages?: string[] | null
           location?: string
           name?: string
+          pet_types?: string[] | null
           rating?: number | null
           specialty?: string
           updated_at?: string

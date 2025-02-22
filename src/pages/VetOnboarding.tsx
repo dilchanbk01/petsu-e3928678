@@ -8,9 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage } from "@/utils/imageCompression";
+
+const PET_TYPES = [
+  { label: "Dogs", value: "dogs" },
+  { label: "Cats", value: "cats" },
+  { label: "Birds", value: "birds" },
+  { label: "Exotic Pets", value: "exotic" },
+  { label: "Small Mammals", value: "small_mammals" },
+  { label: "Reptiles", value: "reptiles" },
+  { label: "Fish", value: "fish" }
+];
 
 const VetOnboarding = () => {
   const navigate = useNavigate();
@@ -23,7 +34,17 @@ const VetOnboarding = () => {
     languages: "",
     consultation_fee: "",
     image_url: "",
+    pet_types: [] as string[]
   });
+
+  const handlePetTypeToggle = (type: string) => {
+    setFormData(prev => ({
+      ...prev,
+      pet_types: prev.pet_types.includes(type)
+        ? prev.pet_types.filter(t => t !== type)
+        : [...prev.pet_types, type]
+    }));
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -161,6 +182,27 @@ const VetOnboarding = () => {
                   <SelectItem value="Dentistry">Dentistry</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Pet Types You Treat</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                {PET_TYPES.map((type) => (
+                  <div key={type.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={type.value}
+                      checked={formData.pet_types.includes(type.value)}
+                      onCheckedChange={() => handlePetTypeToggle(type.value)}
+                    />
+                    <label
+                      htmlFor={type.value}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {type.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">
