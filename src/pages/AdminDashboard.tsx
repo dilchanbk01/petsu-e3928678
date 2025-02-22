@@ -154,7 +154,7 @@ const AdminDashboard = () => {
               Pending Events
             </h2>
             <div className="space-y-4">
-              {pendingEvents?.length === 0 && (
+              {!pendingEvents?.length && (
                 <p className="text-gray-500">No pending events</p>
               )}
               {pendingEvents?.map((event) => (
@@ -169,19 +169,32 @@ const AdminDashboard = () => {
                     <span>•</span>
                     <span>{event.location}</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-2">
                     <Button
+                      type="button"
                       size="sm"
-                      className="bg-green-500 hover:bg-green-600"
-                      onClick={() => updateEventStatus.mutate({ eventId: event.id, status: 'approved' })}
+                      className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
+                      onClick={() => {
+                        updateEventStatus.mutate({ 
+                          eventId: event.id, 
+                          status: 'approved' 
+                        });
+                      }}
                     >
                       <Check className="w-4 h-4 mr-1" />
                       Approve
                     </Button>
                     <Button
+                      type="button"
                       size="sm"
                       variant="destructive"
-                      onClick={() => updateEventStatus.mutate({ eventId: event.id, status: 'declined' })}
+                      className="pointer-events-auto"
+                      onClick={() => {
+                        updateEventStatus.mutate({ 
+                          eventId: event.id, 
+                          status: 'declined' 
+                        });
+                      }}
                     >
                       <X className="w-4 h-4 mr-1" />
                       Decline
@@ -198,7 +211,7 @@ const AdminDashboard = () => {
               Pending Vets
             </h2>
             <div className="space-y-4">
-              {pendingVets?.length === 0 && (
+              {!pendingVets?.length && (
                 <p className="text-gray-500">No pending vets</p>
               )}
               {pendingVets?.map((vet) => (
@@ -213,19 +226,32 @@ const AdminDashboard = () => {
                     <span>•</span>
                     <span>{vet.experience} years experience</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-2">
                     <Button
+                      type="button"
                       size="sm"
-                      className="bg-green-500 hover:bg-green-600"
-                      onClick={() => updateVetStatus.mutate({ vetId: vet.id, status: 'approved' })}
+                      className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
+                      onClick={() => {
+                        updateVetStatus.mutate({ 
+                          vetId: vet.id, 
+                          status: 'approved' 
+                        });
+                      }}
                     >
                       <Check className="w-4 h-4 mr-1" />
                       Approve
                     </Button>
                     <Button
+                      type="button"
                       size="sm"
                       variant="destructive"
-                      onClick={() => updateVetStatus.mutate({ vetId: vet.id, status: 'declined' })}
+                      className="pointer-events-auto"
+                      onClick={() => {
+                        updateVetStatus.mutate({ 
+                          vetId: vet.id, 
+                          status: 'declined' 
+                        });
+                      }}
                     >
                       <X className="w-4 h-4 mr-1" />
                       Decline
