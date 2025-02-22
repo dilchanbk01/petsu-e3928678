@@ -348,16 +348,16 @@ const Events = () => {
         <SheetTrigger asChild>
           {cartItems.length > 0 && (
             <motion.div 
-              className="fixed left-1/2 bottom-10 -translate-x-1/2 bg-petsu-blue text-white px-7 py-3.5 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-4"
+              className="fixed left-1/2 bottom-8 -translate-x-1/2 bg-petsu-blue text-white px-5 py-2.5 rounded-full shadow-lg cursor-pointer hover:bg-petsu-blue/90 transition-colors flex items-center gap-3"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileHover={{ scale: 1.05 }}
             >
-              <span className="font-semibold">View Cart</span>
-              <div className="flex items-center gap-3 border-l border-white/20 pl-4">
-                <span>{totalItems}</span>
-                <span>•</span>
-                <span>₹{totalAmount}</span>
+              <span className="font-semibold text-sm">View Cart</span>
+              <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+                <span className="text-sm">{totalItems}</span>
+                <span className="text-sm">•</span>
+                <span className="text-sm">₹{totalAmount}</span>
               </div>
             </motion.div>
           )}
