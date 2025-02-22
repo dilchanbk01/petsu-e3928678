@@ -6,11 +6,11 @@ import { ArrowLeft, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage } from "@/utils/imageCompression";
 
 const VetOnboarding = () => {
   const navigate = useNavigate();
@@ -30,11 +30,14 @@ const VetOnboarding = () => {
     if (!file) return;
 
     try {
+      // Compress the image before uploading
+      const compressedFile = await compressImage(file);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('vet-profiles')
-        .upload(fileName, file);
+        .upload(fileName, compressedFile);
 
       if (uploadError) throw uploadError;
 

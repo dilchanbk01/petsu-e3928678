@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Upload, Calendar, Clock, MapPin, Users, Phone, Mail, Image } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { compressImage } from "@/utils/imageCompression";
 
 interface EventFormData {
   title: string;
@@ -48,16 +48,26 @@ const CreateEvent = () => {
     imageUrl: ""
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageUrl = reader.result as string;
-        setPreviewImage(imageUrl);
-        setFormData(prev => ({ ...prev, imageUrl }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedFile = await compressImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const imageUrl = reader.result as string;
+          setPreviewImage(imageUrl);
+          setFormData(prev => ({ ...prev, imageUrl }));
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Error compressing image:", error);
+        toast({
+          title: "Error",
+          description: "Failed to process image. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
