@@ -1,7 +1,7 @@
-
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Search, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 // Event type definition
 interface Event {
@@ -86,6 +86,11 @@ const EventCard = ({ event }: { event: Event }) => (
 );
 
 const Events = () => {
+  const [events, setEvents] = useState<Event[]>(() => {
+    const savedEvents = localStorage.getItem('events');
+    return savedEvents ? JSON.parse(savedEvents) : sampleEvents;
+  });
+
   return (
     <div className="min-h-screen p-8">
       {/* Header with back button and search */}
@@ -128,7 +133,7 @@ const Events = () => {
 
       {/* Event grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {sampleEvents.map((event) => (
+        {events.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}
       </div>
