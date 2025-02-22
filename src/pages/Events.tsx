@@ -117,17 +117,17 @@ const FilterBar = ({
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full p-4 flex items-center justify-between text-petsu-blue hover:bg-white/50 transition-colors"
+          className="w-full p-3 flex items-center justify-between text-petsu-blue hover:bg-white/50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-            <h2 className="font-semibold">Filter Events</h2>
+            <Filter className="w-4 h-4" />
+            <h2 className="text-sm font-medium">Filter Events</h2>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ArrowLeft className="w-5 h-5 rotate-90" />
+            <ArrowLeft className="w-4 h-4 rotate-90" />
           </motion.div>
         </button>
 
@@ -252,7 +252,7 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
               >
                 {Array.from({ length: maxTickets }, (_, i) => i + 1).map((num) => (
                   <option key={num} value={num}>
-                    {num} {num === 1 ? "ticket" : "tickets"}
+                    {num} {num === 1 ? 'ticket' : 'tickets'}
                   </option>
                 ))}
               </select>
@@ -564,7 +564,7 @@ const Events = () => {
         <Link to="/create-event">
           <button className="flex items-center gap-2 bg-petsu-blue text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" />
-            <span className="text-sm hidden sm:inline">Create Event</span>
+            <span className="text-sm">Create Event</span>
           </button>
         </Link>
       </div>
