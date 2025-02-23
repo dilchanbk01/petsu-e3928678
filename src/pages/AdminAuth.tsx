@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -70,23 +71,22 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First verify admin credentials using RPC
-      const { data: isAdminValid, error: verifyError } = await supabase
-        .rpc('verify_admin_password', {
-          email: formData.email,
-          password: formData.password
+      // First check if the user exists and has admin role
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('is_admin', {
+          admin_email: formData.email
         });
 
-      if (verifyError) {
-        throw new Error(verifyError.message || "Failed to verify admin credentials");
+      if (adminCheckError) {
+        throw new Error(adminCheckError.message);
       }
 
-      if (!isAdminValid) {
+      if (!isAdmin) {
         throw new Error("Invalid admin credentials");
       }
 
       // Then sign in with Supabase Auth
-      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
@@ -95,18 +95,15 @@ const AdminAuth = () => {
         throw signInError;
       }
 
-      if (!user) {
-        throw new Error("No user data returned after sign in");
-      }
-
       toast.success("Welcome back, admin!");
       navigate("/admin");
     } catch (error: any) {
       console.error("Admin auth error:", error);
-      setIsLoading(false); // Make sure to reset loading state on error
       toast.error(error.message || "Failed to sign in");
       // Reset password field on error
       setFormData(prev => ({ ...prev, password: "" }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -222,7 +219,7 @@ const AdminAuth = () => {
         </div>
       </motion.div>
     </div>
-  );
+  </motion.div>;
 };
 
 export default AdminAuth;
