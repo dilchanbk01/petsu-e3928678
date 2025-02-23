@@ -2,13 +2,14 @@
 import { Session } from "@supabase/supabase-js";
 import { UserType } from "../types/auth";
 import { toast } from "sonner";
+import { NavigateFunction } from "react-router-dom";
 
 export const handleAuthRedirection = (
   loading: boolean,
   session: Session | null,
   userType: UserType,
   currentPath: string,
-  navigate: (path: string) => void
+  navigate: NavigateFunction
 ) => {
   if (loading) return;
 

@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthContextType } from "@/features/auth/types/auth";
 import { useUserTypeCheck } from "@/features/auth/hooks/useUserTypeCheck";
@@ -19,6 +19,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { userType, checkUserType } = useUserTypeCheck();
   const { session, setSession, loading, setLoading, signOut, refreshSession } = useAuthManagement(userType);
 
@@ -54,9 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       userType,
       location.pathname,
-      location.navigate
+      navigate
     );
-  }, [session, loading, userType, location.pathname]);
+  }, [session, loading, userType, location.pathname, navigate]);
 
   const value = {
     session,
