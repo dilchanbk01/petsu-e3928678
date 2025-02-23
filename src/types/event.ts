@@ -8,8 +8,8 @@ export interface Event {
   description: string;
   price: number;
   imageUrl: string;
-  availableTickets?: number;
-  type: string;
+  available_tickets: number;
+  type?: string;
   latitude?: number;
   longitude?: number;
 }
