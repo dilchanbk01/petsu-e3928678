@@ -101,6 +101,30 @@ export type Database = {
           },
         ]
       }
+      dynamic_content: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: Json
+          created_at?: string | null
+          id?: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           created_at: string
