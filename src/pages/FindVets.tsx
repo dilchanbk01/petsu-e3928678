@@ -1,16 +1,15 @@
 
 import { useState, useEffect } from "react";
-import { MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { VetWithAvailability } from "@/types/vet";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/components/AuthProvider";
 import ConsultationRoom from "@/components/ConsultationRoom";
-import VetCard from "@/components/vet-consultation/VetCard";
 import ConsultationHero from "@/components/vet-consultation/ConsultationHero";
 import SearchHeader from "@/components/vet-consultation/SearchHeader";
-import { useAuth } from "@/components/AuthProvider";
+import ConsultationButtons from "@/components/vet-consultation/ConsultationButtons";
+import VetList from "@/components/vet-consultation/VetList";
+import type { VetWithAvailability } from "@/types/vet";
 
 const FindVets = () => {
   const { session } = useAuth();
@@ -37,7 +36,7 @@ const FindVets = () => {
     }
   }, []);
 
-  const fetchVets = async () => {
+  const fetchVets = async (): Promise<VetWithAvailability[]> => {
     const { data: vets, error: vetsError } = await supabase
       .from('vets')
       .select('*')
@@ -52,8 +51,8 @@ const FindVets = () => {
     if (availabilityError) throw availabilityError;
 
     // Create some demo vets if none exist
-    if (vets.length === 0) {
-      const demoVets = [
+    if (!vets?.length) {
+      return [
         {
           id: '1',
           name: 'Dr. Sarah Johnson',
@@ -79,12 +78,11 @@ const FindVets = () => {
           availability: { is_online: true, available_slots: [] }
         }
       ];
-      return demoVets;
     }
 
     return vets.map(vet => ({
       ...vet,
-      availability: availability.find(a => a.vet_id === vet.id) || {
+      availability: availability?.find(a => a.vet_id === vet.id) || {
         is_online: false,
         available_slots: []
       }
@@ -128,7 +126,7 @@ const FindVets = () => {
       setSelectedVetId(onlineVet.id);
       setShowConsultation(true);
 
-      const { data: session, error: sessionError } = await supabase
+      const { data: consultationSession, error: sessionError } = await supabase
         .from('consultation_sessions')
         .insert({
           user_id: session.user.id,
@@ -143,7 +141,7 @@ const FindVets = () => {
       await supabase
         .from('consultation_messages')
         .insert({
-          session_id: session.id,
+          session_id: consultationSession.id,
           sender_id: session.user.id,
           message_type: 'text',
           content: 'Started consultation',
@@ -184,37 +182,14 @@ const FindVets = () => {
 
       <div className="container mx-auto px-4 py-8">
         <SearchHeader userLocation={userLocation} />
+        
+        <VetList vets={vets} isLoading={isLoading} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {isLoading ? (
-            <div className="text-center py-8">Loading vets...</div>
-          ) : (
-            vets.map((vet) => (
-              <VetCard key={vet.id} vet={vet} />
-            ))
-          )}
-        </div>
-
-        <div className="flex justify-center gap-4">
-          <Button 
-            size="lg"
-            className="bg-petsu-blue hover:bg-petsu-blue/90 text-white"
-            onClick={handleStartConsultation}
-          >
-            <MessageSquare className="w-5 h-5 mr-2" />
-            Start Instant Consultation
-          </Button>
-
-          {showConsultation && (
-            <Button 
-              size="lg"
-              variant="destructive"
-              onClick={handleEndConsultation}
-            >
-              End Consultation
-            </Button>
-          )}
-        </div>
+        <ConsultationButtons 
+          showConsultation={showConsultation}
+          onStartConsultation={handleStartConsultation}
+          onEndConsultation={handleEndConsultation}
+        />
       </div>
 
       {showConsultation && selectedVetId && (

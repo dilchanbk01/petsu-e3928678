@@ -173,7 +173,9 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           price: number
           time: string
           title: string
@@ -189,7 +191,9 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           price?: number
           time: string
           title: string
@@ -205,7 +209,9 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           price?: number
           time?: string
           title?: string
@@ -371,6 +377,96 @@ export type Database = {
         }
         Returns: string
       }
+      cube:
+        | {
+            Args: {
+              "": number[]
+            }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              "": number
+            }
+            Returns: unknown
+          }
+      cube_dim: {
+        Args: {
+          "": unknown
+        }
+        Returns: number
+      }
+      cube_in: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      cube_is_point: {
+        Args: {
+          "": unknown
+        }
+        Returns: boolean
+      }
+      cube_out: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      cube_recv: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      cube_send: {
+        Args: {
+          "": unknown
+        }
+        Returns: string
+      }
+      cube_size: {
+        Args: {
+          "": unknown
+        }
+        Returns: number
+      }
+      earth: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      find_nearby_events: {
+        Args: {
+          lat: number
+          lng: number
+          radius_in_km?: number
+        }
+        Returns: {
+          approval_status: string
+          available_tickets: number | null
+          created_at: string
+          creator_id: string | null
+          date: string
+          description: string
+          id: string
+          image_url: string | null
+          latitude: number | null
+          location: string
+          longitude: number | null
+          price: number
+          time: string
+          title: string
+          type: string
+          updated_at: string
+        }[]
+      }
+      gc_to_sec: {
+        Args: {
+          "": number
+        }
+        Returns: number
+      }
       get_admin_role: {
         Args: {
           user_id: string
@@ -388,7 +484,9 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           price: number
           time: string
           title: string
@@ -431,6 +529,24 @@ export type Database = {
           user_id: string
         }
         Returns: boolean
+      }
+      latitude: {
+        Args: {
+          "": unknown
+        }
+        Returns: number
+      }
+      longitude: {
+        Args: {
+          "": unknown
+        }
+        Returns: number
+      }
+      sec_to_gc: {
+        Args: {
+          "": number
+        }
+        Returns: number
       }
       update_event_status: {
         Args: {
