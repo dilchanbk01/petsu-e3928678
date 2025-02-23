@@ -19,40 +19,20 @@ const AuthContext = createContext<AuthContextType>({
   userType: null
 });
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<'user' | 'vet' | 'admin' | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      checkUserType(session?.user?.id);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      checkUserType(session?.user?.id);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const checkUserType = async (userId: string | undefined) => {
     if (!userId) {
@@ -87,6 +67,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserType('user'); // Default to regular user
     }
   };
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      checkUserType(session?.user?.id);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      checkUserType(session?.user?.id);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signOut = async () => {
     try {
@@ -137,4 +137,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
