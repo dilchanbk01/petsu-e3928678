@@ -24,14 +24,14 @@ const AdminAuth = () => {
 
     try {
       // First verify admin credentials
-      const { data: adminId, error: verifyError } = await supabase
+      const { data: isValidAdmin, error: verifyError } = await supabase
         .rpc('verify_admin_password', {
           email: formData.email,
           password: formData.password
         });
 
       if (verifyError) throw verifyError;
-      if (!adminId) throw new Error("Invalid admin credentials");
+      if (!isValidAdmin) throw new Error("Invalid admin credentials");
 
       // Then sign in with Supabase Auth
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
