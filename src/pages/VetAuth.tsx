@@ -23,7 +23,8 @@ const VetAuth = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
+      // Verify vet credentials using the RPC function
+      const { data: vetId, error } = await supabase
         .rpc('verify_vet_credentials', {
           email: formData.email,
           password: formData.password
@@ -31,7 +32,7 @@ const VetAuth = () => {
       
       if (error) throw error;
       
-      if (!data) {
+      if (!vetId) {
         throw new Error('Invalid credentials or vet account not approved');
       }
 
@@ -39,16 +40,22 @@ const VetAuth = () => {
       await supabase
         .from('vet_availability')
         .upsert({
-          vet_id: data,
+          vet_id: vetId,
           is_online: true,
           last_seen_at: new Date().toISOString()
         });
 
       // Store vet session info
-      localStorage.setItem('vetId', data);
+      localStorage.setItem('vetId', vetId);
       navigate("/vet-dashboard");
+      toast.success("Welcome back!");
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
+      console.error("Login error:", error);
+      if (error.message.includes('approved')) {
+        toast.error("Your account is pending approval");
+      } else {
+        toast.error("Invalid email or password");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +136,13 @@ const VetAuth = () => {
                 "Sign In"
               )}
             </Button>
+
+            <p className="text-center text-sm text-gray-600">
+              Don't have an account?{" "}
+              <Link to="/vet-onboarding" className="text-petsu-blue hover:underline">
+                Register here
+              </Link>
+            </p>
           </form>
         </div>
       </motion.div>

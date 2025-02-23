@@ -64,6 +64,12 @@ const VetOnboarding = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data: vetData, error: vetError } = await supabase
         .from('vets')
@@ -77,19 +83,28 @@ const VetOnboarding = () => {
           image_url: formData.image_url,
           approval_status: 'pending',
         })
-        .select()
+        .select('id')
         .single();
 
       if (vetError) throw vetError;
+
+      if (!vetData?.id) {
+        throw new Error('Failed to create vet profile');
+      }
+
+      const { data: hashedPassword, error: hashError } = await supabase
+        .rpc('hash_vet_password', {
+          password: formData.password
+        });
+
+      if (hashError) throw hashError;
 
       const { error: credError } = await supabase
         .from('vet_credentials')
         .insert({
           vet_id: vetData.id,
           email: formData.email,
-          password_hash: await supabase.rpc('hash_vet_password', {
-            password: formData.password
-          })
+          password_hash: hashedPassword
         });
 
       if (credError) throw credError;
@@ -105,7 +120,11 @@ const VetOnboarding = () => {
       navigate('/vet-auth');
     } catch (error: any) {
       console.error("Error registering vet:", error);
-      toast.error(error.message || "Failed to complete registration. Please try again.");
+      if (error.message.includes('duplicate key')) {
+        toast.error("This email is already registered");
+      } else {
+        toast.error(error.message || "Failed to complete registration. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
