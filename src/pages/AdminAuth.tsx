@@ -24,21 +24,7 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First check if the user exists and has admin role
-      const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('is_admin', {
-          admin_email: formData.email
-        });
-
-      if (adminCheckError) {
-        throw new Error(adminCheckError.message);
-      }
-
-      if (!isAdmin) {
-        throw new Error("Invalid admin credentials");
-      }
-
-      // Then sign in with Supabase Auth
+      // First sign in with Supabase Auth
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -48,12 +34,29 @@ const AdminAuth = () => {
         throw signInError;
       }
 
+      // Then check if the user has admin role
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('is_admin', {
+          admin_email: formData.email
+        });
+
+      if (adminCheckError) {
+        // If there's an error checking admin status, sign out the user
+        await supabase.auth.signOut();
+        throw new Error(adminCheckError.message);
+      }
+
+      if (!isAdmin) {
+        // If not an admin, sign out the user
+        await supabase.auth.signOut();
+        throw new Error("This account does not have admin privileges");
+      }
+
       toast.success("Welcome back, admin!");
       navigate("/admin");
     } catch (error: any) {
       console.error("Admin auth error:", error);
       toast.error(error.message || "Failed to sign in");
-    } finally {
       setIsLoading(false);
     }
   };
