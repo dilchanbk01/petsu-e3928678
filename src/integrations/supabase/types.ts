@@ -692,6 +692,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      verify_admin_credentials: {
+        Args: {
+          email: string
+          password: string
+        }
+        Returns: string
+      }
       verify_admin_password: {
         Args: {
           email: string
