@@ -1,6 +1,7 @@
 
 import { motion } from "framer-motion";
 import { Calendar, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Event } from "@/types/event";
 
 interface EventCardProps {
@@ -8,13 +9,20 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/events/${event.id}`);
+  };
+
   return (
     <motion.div 
-      className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg"
+      className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
+      onClick={handleClick}
     >
       <div className="relative">
         <img 
@@ -44,4 +52,3 @@ const EventCard = ({ event }: EventCardProps) => {
 };
 
 export default EventCard;
-
