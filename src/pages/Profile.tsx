@@ -1,11 +1,15 @@
+
 import { useState, useEffect } from "react";
-import { ArrowLeft, Mail, Phone, User, Calendar, Medal, Settings, LogOut, DollarSign, Users, Ticket } from "lucide-react";
+import { ArrowLeft, Mail, Phone, User, Calendar, Settings, Ticket } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ActivitiesList } from "@/components/profile/ActivitiesList";
+import { EventInsights } from "@/components/profile/EventInsights";
 
 interface UserActivity {
   id: string;
@@ -49,7 +53,6 @@ const Profile = () => {
 
     const fetchProfileAndActivities = async () => {
       try {
-        // Fetch profile data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -59,7 +62,6 @@ const Profile = () => {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        // Fetch user activities
         const { data: activitiesData, error: activitiesError } = await supabase
           .from('user_activities')
           .select('*')
@@ -69,7 +71,6 @@ const Profile = () => {
         if (activitiesError) throw activitiesError;
         setActivities(activitiesData);
 
-        // Check if user has created any events
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select('id')
@@ -79,7 +80,6 @@ const Profile = () => {
         if (!eventsError && eventsData && eventsData.length > 0) {
           setIsEventCreator(true);
 
-          // Fetch event insights if user is a creator
           const { data: insightsData, error: insightsError } = await supabase
             .from('event_insights')
             .select('*')
@@ -139,33 +139,7 @@ const Profile = () => {
         </div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 border-2 border-petsu-blue shadow-lg">
-          <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-petsu-blue/20">
-            <div className="bg-petsu-blue/10 p-4 rounded-full">
-              {profile?.avatar_url ? (
-                <img 
-                  src={profile.avatar_url} 
-                  alt={profile.full_name} 
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-16 h-16 text-petsu-blue" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-petsu-blue">{profile?.full_name}</h1>
-              <p className="text-petsu-blue/60">
-                Member since {new Date(profile?.created_at || '').toLocaleDateString()}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              className="border-2 border-red-500 text-red-500 hover:bg-red-50"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+          <ProfileHeader profile={profile} onSignOut={handleSignOut} />
 
           <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="grid grid-cols-4 gap-4 bg-petsu-blue/5 p-1">
@@ -202,78 +176,13 @@ const Profile = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="activities" className="space-y-4">
-              {activities.length === 0 ? (
-                <p className="text-center text-petsu-blue/60 py-8">
-                  No activities yet. Join events or book consultations to see them here!
-                </p>
-              ) : (
-                activities.map((activity) => (
-                  <div 
-                    key={activity.id}
-                    className="bg-petsu-yellow/10 p-4 rounded-xl border-2 border-petsu-blue"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Medal className="w-5 h-5 text-petsu-blue" />
-                      <span className="font-semibold text-petsu-blue">
-                        {activity.activity_type === 'event' ? 'Event Participation' :
-                         activity.activity_type === 'consultation' ? 'Vet Consultation' :
-                         'Vet Appointment'}
-                      </span>
-                    </div>
-                    <p className="text-petsu-blue/80">
-                      {new Date(activity.activity_date).toLocaleDateString()}
-                    </p>
-                    <p className="text-petsu-blue/60 text-sm mt-1">
-                      Status: {activity.status}
-                    </p>
-                  </div>
-                ))
-              )}
+            <TabsContent value="activities">
+              <ActivitiesList activities={activities} />
             </TabsContent>
 
             {isEventCreator && (
-              <TabsContent value="events" className="space-y-4">
-                {eventInsights.length === 0 ? (
-                  <p className="text-center text-petsu-blue/60 py-8">
-                    No event data available yet. Create your first event to see insights here!
-                  </p>
-                ) : (
-                  eventInsights.map((insight) => (
-                    <div 
-                      key={insight.event_id}
-                      className="bg-white rounded-xl p-6 shadow-md border-2 border-petsu-blue/20 hover:border-petsu-blue transition-colors"
-                    >
-                      <h3 className="text-xl font-semibold text-petsu-blue mb-4">{insight.title}</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5 text-petsu-blue/60" />
-                          <div>
-                            <p className="text-sm text-petsu-blue/60">Total Bookings</p>
-                            <p className="text-lg font-semibold text-petsu-blue">{insight.total_bookings}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Ticket className="w-5 h-5 text-petsu-blue/60" />
-                          <div>
-                            <p className="text-sm text-petsu-blue/60">Tickets Sold</p>
-                            <p className="text-lg font-semibold text-petsu-blue">{insight.total_tickets_sold}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-5 h-5 text-petsu-blue/60" />
-                          <div>
-                            <p className="text-sm text-petsu-blue/60">Total Revenue</p>
-                            <p className="text-lg font-semibold text-petsu-blue">₹{insight.total_revenue}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-sm text-petsu-blue/60 mt-4">
-                        Event Date: {new Date(insight.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))
-                )}
+              <TabsContent value="events">
+                <EventInsights insights={eventInsights} />
               </TabsContent>
             )}
 
