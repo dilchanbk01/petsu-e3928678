@@ -276,6 +276,41 @@ export type Database = {
           },
         ]
       }
+      vet_credentials: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          password_hash: string
+          updated_at: string | null
+          vet_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          password_hash: string
+          updated_at?: string | null
+          vet_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          password_hash?: string
+          updated_at?: string | null
+          vet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_credentials_vet_id_fkey"
+            columns: ["vet_id"]
+            isOneToOne: false
+            referencedRelation: "vets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vets: {
         Row: {
           approval_status: string
@@ -385,6 +420,12 @@ export type Database = {
         }
         Returns: string
       }
+      hash_vet_password: {
+        Args: {
+          password: string
+        }
+        Returns: string
+      }
       is_admin: {
         Args: {
           user_id: string
@@ -411,6 +452,13 @@ export type Database = {
           password: string
         }
         Returns: boolean
+      }
+      verify_vet_credentials: {
+        Args: {
+          email: string
+          password: string
+        }
+        Returns: string
       }
     }
     Enums: {
