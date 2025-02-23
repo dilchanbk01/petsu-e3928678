@@ -22,6 +22,9 @@ const VetOnboarding = () => {
     languages: "",
     consultation_fee: "",
     image_url: "",
+    email: "",
+    password: "",
+    confirm_password: "",
   });
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +32,6 @@ const VetOnboarding = () => {
     if (!file) return;
 
     try {
-      // Compress the image before uploading
       const compressedFile = await compressImage(file);
       
       const fileExt = file.name.split('.').pop();
@@ -56,20 +58,51 @@ const VetOnboarding = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (formData.password !== formData.confirm_password) {
+      toast.error("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase
+      const { data: vetData, error: vetError } = await supabase
         .from('vets')
         .insert({
-          ...formData,
+          name: formData.name,
+          specialty: formData.specialty,
+          experience: formData.experience,
+          location: formData.location,
           languages: formData.languages.split(',').map(lang => lang.trim()),
           consultation_fee: parseInt(formData.consultation_fee),
+          image_url: formData.image_url,
           approval_status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (vetError) throw vetError;
+
+      const { error: credError } = await supabase
+        .from('vet_credentials')
+        .insert({
+          vet_id: vetData.id,
+          email: formData.email,
+          password_hash: await supabase.rpc('hash_vet_password', {
+            password: formData.password
+          })
         });
 
-      if (error) throw error;
+      if (credError) throw credError;
+
+      await supabase
+        .from('vet_availability')
+        .insert({
+          vet_id: vetData.id,
+          is_online: false,
+        });
 
       toast.success("Registration successful! Your profile is pending approval.");
-      navigate('/');
+      navigate('/vet-auth');
     } catch (error: any) {
       console.error("Error registering vet:", error);
       toast.error(error.message || "Failed to complete registration. Please try again.");
@@ -198,6 +231,39 @@ const VetOnboarding = () => {
                 value={formData.consultation_fee}
                 onChange={(e) => setFormData(prev => ({ ...prev, consultation_fee: e.target.value }))}
                 placeholder="50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                required
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                required
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Choose a strong password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Confirm Password</Label>
+              <Input
+                required
+                type="password"
+                value={formData.confirm_password}
+                onChange={(e) => setFormData(prev => ({ ...prev, confirm_password: e.target.value }))}
+                placeholder="Confirm your password"
               />
             </div>
 

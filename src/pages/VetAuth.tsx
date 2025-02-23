@@ -23,30 +23,29 @@ const VetAuth = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      const { data, error } = await supabase
+        .rpc('verify_vet_credentials', {
+          email: formData.email,
+          password: formData.password
+        });
       
       if (error) throw error;
-
-      // Check if the user is a vet
-      const { data: vetData, error: vetError } = await supabase
-        .from('vets')
-        .select('id, approval_status')
-        .eq('email', formData.email)
-        .single();
-
-      if (vetError || !vetData) {
-        await supabase.auth.signOut();
-        throw new Error('No vet account found with this email');
+      
+      if (!data) {
+        throw new Error('Invalid credentials or vet account not approved');
       }
 
-      if (vetData.approval_status !== 'approved') {
-        await supabase.auth.signOut();
-        throw new Error('Your vet account is pending approval');
-      }
+      // Set vet as online
+      await supabase
+        .from('vet_availability')
+        .upsert({
+          vet_id: data,
+          is_online: true,
+          last_seen_at: new Date().toISOString()
+        });
 
+      // Store vet session info
+      localStorage.setItem('vetId', data);
       navigate("/vet-dashboard");
     } catch (error: any) {
       toast.error(error.message || "Failed to sign in");
