@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, Mail, Phone, User, Calendar, Medal, Settings, LogOut } from "lucide-react";
+import { ArrowLeft, Mail, Phone, User, Calendar, Medal, Settings, LogOut, DollarSign, Users, Ticket } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,12 +23,23 @@ interface UserProfile {
   created_at: string;
 }
 
+interface EventInsight {
+  event_id: string;
+  title: string;
+  date: string;
+  total_bookings: number;
+  total_tickets_sold: number;
+  total_revenue: number;
+}
+
 const Profile = () => {
   const { session, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [activities, setActivities] = useState<UserActivity[]>([]);
+  const [eventInsights, setEventInsights] = useState<EventInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEventCreator, setIsEventCreator] = useState(false);
 
   useEffect(() => {
     if (!session?.user) {
@@ -58,6 +68,27 @@ const Profile = () => {
 
         if (activitiesError) throw activitiesError;
         setActivities(activitiesData);
+
+        // Check if user has created any events
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select('id')
+          .eq('creator_id', session.user.id)
+          .limit(1);
+
+        if (!eventsError && eventsData && eventsData.length > 0) {
+          setIsEventCreator(true);
+
+          // Fetch event insights if user is a creator
+          const { data: insightsData, error: insightsError } = await supabase
+            .from('event_insights')
+            .select('*')
+            .eq('creator_id', session.user.id)
+            .order('date', { ascending: false });
+
+          if (insightsError) throw insightsError;
+          setEventInsights(insightsData || []);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load profile data');
@@ -137,7 +168,7 @@ const Profile = () => {
           </div>
 
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid grid-cols-3 gap-4 bg-petsu-blue/5 p-1">
+            <TabsList className="grid grid-cols-4 gap-4 bg-petsu-blue/5 p-1">
               <TabsTrigger value="profile" className="data-[state=active]:bg-white">
                 <User className="w-4 h-4 mr-2" />
                 Profile
@@ -146,6 +177,12 @@ const Profile = () => {
                 <Calendar className="w-4 h-4 mr-2" />
                 Activities
               </TabsTrigger>
+              {isEventCreator && (
+                <TabsTrigger value="events" className="data-[state=active]:bg-white">
+                  <Ticket className="w-4 h-4 mr-2" />
+                  My Events
+                </TabsTrigger>
+              )}
               <TabsTrigger value="settings" className="data-[state=active]:bg-white">
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -194,6 +231,51 @@ const Profile = () => {
                 ))
               )}
             </TabsContent>
+
+            {isEventCreator && (
+              <TabsContent value="events" className="space-y-4">
+                {eventInsights.length === 0 ? (
+                  <p className="text-center text-petsu-blue/60 py-8">
+                    No event data available yet. Create your first event to see insights here!
+                  </p>
+                ) : (
+                  eventInsights.map((insight) => (
+                    <div 
+                      key={insight.event_id}
+                      className="bg-white rounded-xl p-6 shadow-md border-2 border-petsu-blue/20 hover:border-petsu-blue transition-colors"
+                    >
+                      <h3 className="text-xl font-semibold text-petsu-blue mb-4">{insight.title}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-5 h-5 text-petsu-blue/60" />
+                          <div>
+                            <p className="text-sm text-petsu-blue/60">Total Bookings</p>
+                            <p className="text-lg font-semibold text-petsu-blue">{insight.total_bookings}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Ticket className="w-5 h-5 text-petsu-blue/60" />
+                          <div>
+                            <p className="text-sm text-petsu-blue/60">Tickets Sold</p>
+                            <p className="text-lg font-semibold text-petsu-blue">{insight.total_tickets_sold}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-5 h-5 text-petsu-blue/60" />
+                          <div>
+                            <p className="text-sm text-petsu-blue/60">Total Revenue</p>
+                            <p className="text-lg font-semibold text-petsu-blue">₹{insight.total_revenue}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-petsu-blue/60 mt-4">
+                        Event Date: {new Date(insight.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </TabsContent>
+            )}
 
             <TabsContent value="settings" className="space-y-4">
               <Button variant="outline" className="w-full justify-start">

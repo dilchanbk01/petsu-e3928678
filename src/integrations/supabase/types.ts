@@ -226,6 +226,13 @@ export type Database = {
             foreignKeyName: "event_registrations_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_insights"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -479,7 +486,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      event_insights: {
+        Row: {
+          creator_id: string | null
+          date: string | null
+          event_id: string | null
+          title: string | null
+          total_bookings: number | null
+          total_revenue: number | null
+          total_tickets_sold: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_admin_credentials: {
