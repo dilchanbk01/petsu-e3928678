@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, User, Video, MessageSquare, Check, X } from "lucide-react";
+import { Calendar, Clock, User, Video, MessageSquare, Check, X, ToggleRight, ToggleLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +40,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-petsu-blue" />
             <span className="font-medium">
-              {new Date(appointment.appointment_time).toLocaleString()}
+              {new Date(`${appointment.appointment_date} ${appointment.appointment_time}`).toLocaleString()}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -110,6 +110,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
 
 const VetDashboard = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all');
+  const [isOnline, setIsOnline] = useState(false);
 
   const fetchAppointments = async () => {
     const { data: vetData, error: vetError } = await supabase
@@ -139,6 +140,62 @@ const VetDashboard = () => {
   );
 
   useEffect(() => {
+    // Fetch initial online status
+    const fetchOnlineStatus = async () => {
+      const { data: vetData } = await supabase
+        .from('vets')
+        .select('id')
+        .single();
+
+      if (vetData) {
+        const { data: availabilityData } = await supabase
+          .from('vet_availability')
+          .select('is_online')
+          .eq('vet_id', vetData.id)
+          .single();
+
+        if (availabilityData) {
+          setIsOnline(availabilityData.is_online);
+        }
+      }
+    };
+
+    fetchOnlineStatus();
+  }, []);
+
+  const toggleOnlineStatus = async () => {
+    try {
+      const { data: vetData } = await supabase
+        .from('vets')
+        .select('id')
+        .single();
+
+      if (!vetData) {
+        toast.error("Vet profile not found");
+        return;
+      }
+
+      const newStatus = !isOnline;
+
+      const { error } = await supabase
+        .from('vet_availability')
+        .upsert({
+          vet_id: vetData.id,
+          is_online: newStatus,
+          last_seen_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      setIsOnline(newStatus);
+      toast.success(`You are now ${newStatus ? 'online' : 'offline'}`);
+    } catch (error) {
+      console.error('Error toggling online status:', error);
+      toast.error("Failed to update online status");
+    }
+  };
+
+  useEffect(() => {
     const channel = supabase.channel('appointments')
       .on(
         'postgres_changes',
@@ -156,13 +213,29 @@ const VetDashboard = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8">
-      <motion.h1 
-        className="text-2xl font-bold text-petsu-yellow mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        Vet Dashboard
-      </motion.h1>
+      <div className="flex justify-between items-center mb-8">
+        <motion.h1 
+          className="text-2xl font-bold text-petsu-yellow"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Vet Dashboard
+        </motion.h1>
+
+        <Button
+          onClick={toggleOnlineStatus}
+          className={`${
+            isOnline ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 hover:bg-gray-500'
+          } text-white`}
+        >
+          {isOnline ? (
+            <ToggleRight className="w-5 h-5 mr-2" />
+          ) : (
+            <ToggleLeft className="w-5 h-5 mr-2" />
+          )}
+          {isOnline ? 'Online' : 'Offline'}
+        </Button>
+      </div>
 
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
         {(['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const).map((status) => (
