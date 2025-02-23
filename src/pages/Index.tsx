@@ -1,5 +1,5 @@
 
-import { ArrowRight, UserCircle } from "lucide-react";
+import { ArrowRight, UserCircle, LogIn, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -15,9 +15,34 @@ import { supabase } from "@/integrations/supabase/client";
 
 const NavCard = lazy(() => import("@/components/NavCard"));
 
+const AuthButtons = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="absolute top-6 right-6 flex gap-3">
+      <Button 
+        variant="outline" 
+        className="bg-white/90 backdrop-blur-sm border-2 border-petsu-blue rounded-full px-6 py-2 hover:bg-petsu-yellow/20 transition-all duration-300"
+        onClick={() => navigate('/auth')}
+      >
+        <LogIn className="w-5 h-5 mr-2 text-petsu-blue" />
+        <span className="text-petsu-blue">Sign In</span>
+      </Button>
+      <Button 
+        variant="outline" 
+        className="bg-petsu-blue backdrop-blur-sm border-2 border-petsu-blue rounded-full px-6 py-2 hover:bg-petsu-blue/90 transition-all duration-300"
+        onClick={() => navigate('/auth', { state: { isSignUp: true } })}
+      >
+        <UserPlus className="w-5 h-5 mr-2 text-white" />
+        <span className="text-white">Sign Up</span>
+      </Button>
+    </div>
+  );
+};
+
 const ProfileMenu = () => {
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
   const [userName, setUserName] = useState("Loading...");
 
   useEffect(() => {
@@ -69,7 +94,10 @@ const ProfileMenu = () => {
               My Tickets
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
+          <DropdownMenuItem 
+            className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium"
+            onClick={signOut}
+          >
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -86,9 +114,11 @@ const LoadingCard = () => (
 );
 
 const Index = () => {
+  const { session } = useAuth();
+
   return (
     <div className="min-h-screen p-6 md:p-8 flex flex-col items-center justify-center relative">
-      <ProfileMenu />
+      {session ? <ProfileMenu /> : <AuthButtons />}
       
       <motion.div
         className="w-64 md:w-80 mb-12"
