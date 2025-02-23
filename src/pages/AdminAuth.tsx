@@ -35,9 +35,9 @@ const AdminAuth = () => {
       }
 
       // Then check if the user has admin role
-      const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('is_admin', {
-          admin_email: formData.email
+      const { data: adminRole, error: adminCheckError } = await supabase
+        .rpc('get_admin_role', {
+          user_id: (await supabase.auth.getUser()).data.user?.id
         });
 
       if (adminCheckError) {
@@ -46,7 +46,7 @@ const AdminAuth = () => {
         throw new Error(adminCheckError.message);
       }
 
-      if (!isAdmin) {
+      if (!adminRole || adminRole !== 'admin') {
         // If not an admin, sign out the user
         await supabase.auth.signOut();
         throw new Error("This account does not have admin privileges");
