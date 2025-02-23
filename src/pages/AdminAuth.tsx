@@ -23,23 +23,23 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First verify admin credentials using our new secure function
-      const { data: adminId, error: verifyError } = await supabase
-        .rpc('verify_admin_credentials', {
-          email: formData.email,
-          password: formData.password
-        });
-
-      if (verifyError) throw verifyError;
-      if (!adminId) throw new Error("Invalid credentials");
-
-      // Sign in with Supabase Auth
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // First sign in with Supabase Auth
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (signInError) throw signInError;
+
+      // Then check if user is admin
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('is_admin', { user_id: signInData.user.id });
+
+      if (adminCheckError) throw adminCheckError;
+
+      if (!isAdmin) {
+        throw new Error("Access denied. You are not authorized as an admin.");
+      }
 
       toast.success("Welcome back, admin!");
       navigate("/admin");
