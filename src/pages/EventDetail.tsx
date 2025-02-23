@@ -4,6 +4,8 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Users, Ticket, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +18,32 @@ import type { Event } from "@/types/event";
 const EventDetail = () => {
   const { id } = useParams();
   const [event, setEvent] = useState<Event | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { session } = useAuth();
 
   useEffect(() => {
-    const events = JSON.parse(localStorage.getItem('events') || '[]');
-    const foundEvent = events.find((e: Event) => e.id === id);
-    if (foundEvent) {
-      setEvent(foundEvent);
-    } else {
-      toast.error("Event not found");
-    }
+    const fetchEvent = async () => {
+      try {
+        const { data: event, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        
+        if (event) {
+          setEvent(event);
+        } else {
+          toast.error("Event not found");
+        }
+      } catch (error: any) {
+        console.error('Error fetching event:', error);
+        toast.error(error.message || "Failed to load event");
+      }
+    };
+
+    fetchEvent();
   }, [id]);
 
   const handleShare = async (platform: 'whatsapp' | 'instagram') => {
@@ -36,7 +55,6 @@ const EventDetail = () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + eventUrl)}`, '_blank');
         break;
       case 'instagram':
-        // Instagram doesn't have a direct sharing URL, so we'll copy to clipboard
         try {
           await navigator.clipboard.writeText(text + ' ' + eventUrl);
           toast.success("Link copied! You can now share it on Instagram");
@@ -47,29 +65,48 @@ const EventDetail = () => {
     }
   };
 
-  const handleBooking = () => {
-    // Check if there are available tickets
-    if (!event?.availableTickets || event.availableTickets <= 0) {
+  const handleBooking = async () => {
+    if (!session) {
+      toast.error("Please sign in to book tickets");
+      return;
+    }
+
+    if (!event?.available_tickets || event.available_tickets <= 0) {
       toast.error("Sorry, this event is sold out!");
       return;
     }
 
-    // Update available tickets in localStorage
-    const events = JSON.parse(localStorage.getItem('events') || '[]');
-    const updatedEvents = events.map((e: Event) => {
-      if (e.id === event.id) {
-        return {
-          ...e,
-          availableTickets: e.availableTickets ? e.availableTickets - 1 : 0
-        };
-      }
-      return e;
-    });
-    
-    localStorage.setItem('events', JSON.stringify(updatedEvents));
-    setEvent(prev => prev ? {...prev, availableTickets: prev.availableTickets ? prev.availableTickets - 1 : 0} : null);
-    
-    toast.success("Booking successful! Check your email for details.");
+    setIsLoading(true);
+
+    try {
+      // Insert booking record
+      const { error: bookingError } = await supabase
+        .from('event_bookings')
+        .insert({
+          event_id: event.id,
+          user_id: session.user.id,
+          quantity: 1
+        });
+
+      if (bookingError) throw bookingError;
+
+      // Fetch updated event details
+      const { data: updatedEvent, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (eventError) throw eventError;
+
+      setEvent(updatedEvent);
+      toast.success("Booking successful! Check your email for details.");
+    } catch (error: any) {
+      console.error('Error booking ticket:', error);
+      toast.error(error.message || "Failed to book ticket");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!event) {
@@ -166,10 +203,10 @@ const EventDetail = () => {
                 <Button 
                   className="bg-petsu-blue hover:bg-petsu-blue/90"
                   onClick={handleBooking}
-                  disabled={!event.availableTickets || event.availableTickets <= 0}
+                  disabled={!event.availableTickets || event.availableTickets <= 0 || isLoading}
                 >
                   <Ticket className="w-4 h-4 mr-2" />
-                  Book Now
+                  {isLoading ? "Booking..." : "Book Now"}
                 </Button>
               </div>
             </div>
@@ -181,3 +218,4 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
+
