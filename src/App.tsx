@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Index from "@/pages/Index"
 import Profile from "@/pages/Profile"
 import Events from "@/pages/Events"
-import Event from "@/pages/Event"  // Add this import
 import FindVets from "@/pages/FindVets"
 import PetEssentials from "@/pages/PetEssentials"
 import CreateEvent from "@/pages/CreateEvent"
@@ -76,7 +75,6 @@ const AppRoutes = () => (
     <Route path="/find-vets" element={<FindVets />} />
     <Route path="/pet-essentials" element={<PetEssentials />} />
     <Route path="/events" element={<Events />} />
-    <Route path="/events/:id" element={<Event />} />  {/* Add this route */}
     <Route path="/vet-onboarding" element={<VetOnboarding />} />
     
     {/* Auth routes */}
