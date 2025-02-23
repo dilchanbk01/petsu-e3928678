@@ -2,8 +2,14 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Users, Ticket } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Ticket, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import type { Event } from "@/types/event";
 
@@ -12,7 +18,6 @@ const EventDetail = () => {
   const [event, setEvent] = useState<Event | null>(null);
 
   useEffect(() => {
-    // Fetch event from localStorage
     const events = JSON.parse(localStorage.getItem('events') || '[]');
     const foundEvent = events.find((e: Event) => e.id === id);
     if (foundEvent) {
@@ -22,12 +27,57 @@ const EventDetail = () => {
     }
   }, [id]);
 
+  const handleShare = async (platform: 'whatsapp' | 'instagram') => {
+    const eventUrl = window.location.href;
+    const text = `Check out this event: ${event?.title}`;
+    
+    switch (platform) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + eventUrl)}`, '_blank');
+        break;
+      case 'instagram':
+        // Instagram doesn't have a direct sharing URL, so we'll copy to clipboard
+        try {
+          await navigator.clipboard.writeText(text + ' ' + eventUrl);
+          toast.success("Link copied! You can now share it on Instagram");
+        } catch (err) {
+          toast.error("Failed to copy link");
+        }
+        break;
+    }
+  };
+
+  const handleBooking = () => {
+    // Check if there are available tickets
+    if (!event?.availableTickets || event.availableTickets <= 0) {
+      toast.error("Sorry, this event is sold out!");
+      return;
+    }
+
+    // Update available tickets in localStorage
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    const updatedEvents = events.map((e: Event) => {
+      if (e.id === event.id) {
+        return {
+          ...e,
+          availableTickets: e.availableTickets ? e.availableTickets - 1 : 0
+        };
+      }
+      return e;
+    });
+    
+    localStorage.setItem('events', JSON.stringify(updatedEvents));
+    setEvent(prev => prev ? {...prev, availableTickets: prev.availableTickets ? prev.availableTickets - 1 : 0} : null);
+    
+    toast.success("Booking successful! Check your email for details.");
+  };
+
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-petsu-green">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-600">Event not found</h2>
-          <Link to="/events" className="text-petsu-blue hover:underline mt-4 inline-block">
+          <h2 className="text-xl font-semibold text-white">Event not found</h2>
+          <Link to="/events" className="text-petsu-yellow hover:underline mt-4 inline-block">
             Return to Events
           </Link>
         </div>
@@ -36,10 +86,10 @@ const EventDetail = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 md:p-8 bg-gray-50">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 bg-petsu-green">
       <Link to="/events">
         <motion.div
-          className="inline-flex items-center text-petsu-blue hover:text-petsu-yellow transition-colors mb-6"
+          className="inline-flex items-center text-white hover:text-petsu-yellow transition-colors mb-6"
           whileHover={{ x: -5 }}
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -50,7 +100,7 @@ const EventDetail = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden"
+        className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border-2 border-petsu-blue"
       >
         <div className="relative h-64 sm:h-80">
           <img
@@ -85,7 +135,7 @@ const EventDetail = () => {
             <p className="text-gray-600">{event.description}</p>
           </div>
 
-          <div className="border-t pt-6">
+          <div className="border-t border-petsu-blue/20 pt-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2 text-petsu-blue" />
@@ -94,13 +144,30 @@ const EventDetail = () => {
                 </span>
               </div>
               <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  className="border-2 border-petsu-blue text-petsu-blue hover:bg-petsu-blue/10"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-2 border-petsu-blue text-petsu-blue hover:bg-petsu-blue/10"
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share Event
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                      Share on WhatsApp
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare('instagram')}>
+                      Share on Instagram
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button 
+                  className="bg-petsu-blue hover:bg-petsu-blue/90"
+                  onClick={handleBooking}
+                  disabled={!event.availableTickets || event.availableTickets <= 0}
                 >
-                  Share Event
-                </Button>
-                <Button className="bg-petsu-blue hover:bg-petsu-blue/90">
                   <Ticket className="w-4 h-4 mr-2" />
                   Book Now
                 </Button>
