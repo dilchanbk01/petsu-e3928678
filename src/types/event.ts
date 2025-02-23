@@ -10,4 +10,6 @@ export interface Event {
   imageUrl: string;
   availableTickets?: number;
   type: string;
+  latitude?: number;
+  longitude?: number;
 }

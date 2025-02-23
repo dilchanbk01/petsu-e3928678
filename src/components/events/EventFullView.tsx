@@ -57,6 +57,13 @@ const EventFullView = ({ event, onClose }: EventFullViewProps) => {
     }
   };
 
+  const handleLocationClick = () => {
+    if (event.latitude && event.longitude) {
+      const mapsUrl = `https://www.google.com/maps?q=${event.latitude},${event.longitude}`;
+      window.open(mapsUrl, '_blank');
+    }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-50 bg-white overflow-y-auto"
@@ -93,10 +100,13 @@ const EventFullView = ({ event, onClose }: EventFullViewProps) => {
                   <Calendar className="w-5 h-5 mr-2" />
                   <span>{event.date} at {event.time}</span>
                 </div>
-                <div className="flex items-center text-petsu-blue">
+                <button 
+                  onClick={handleLocationClick}
+                  className="flex items-center text-petsu-blue hover:text-petsu-blue/70 transition-colors"
+                >
                   <MapPin className="w-5 h-5 mr-2" />
-                  <span>{event.location}</span>
-                </div>
+                  <span className="underline">{event.location}</span>
+                </button>
                 <div className="flex items-center text-petsu-blue">
                   <Ticket className="w-5 h-5 mr-2" />
                   <span>{event.availableTickets} tickets available</span>
@@ -111,7 +121,13 @@ const EventFullView = ({ event, onClose }: EventFullViewProps) => {
                   {!showQuantity ? (
                     <Button 
                       className="bg-petsu-blue text-white hover:bg-petsu-blue/90"
-                      onClick={() => setShowQuantity(true)}
+                      onClick={() => {
+                        if (!session?.user && event.price === 0) {
+                          navigate('/auth', { state: { redirectTo: `/events/${event.id}` } });
+                          return;
+                        }
+                        setShowQuantity(true);
+                      }}
                       disabled={event.availableTickets === 0}
                     >
                       {event.availableTickets === 0 ? "Sold Out" : "Register Now"}
