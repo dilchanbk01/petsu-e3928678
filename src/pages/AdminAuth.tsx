@@ -219,7 +219,7 @@ const AdminAuth = () => {
         </div>
       </motion.div>
     </div>
-  </motion.div>;
+  );
 };
 
 export default AdminAuth;

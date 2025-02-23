@@ -693,12 +693,19 @@ export type Database = {
         }
         Returns: string
       }
-      is_admin: {
-        Args: {
-          user_id: string
-        }
-        Returns: boolean
-      }
+      is_admin:
+        | {
+            Args: {
+              admin_email: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              user_id: string
+            }
+            Returns: boolean
+          }
       latitude: {
         Args: {
           "": unknown
