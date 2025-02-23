@@ -23,7 +23,17 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First sign in with Supabase Auth
+      // First verify admin credentials
+      const { data: adminId, error: verifyError } = await supabase
+        .rpc('verify_admin_password', {
+          email: formData.email,
+          password: formData.password
+        });
+
+      if (verifyError) throw verifyError;
+      if (!adminId) throw new Error("Invalid admin credentials");
+
+      // Then sign in with Supabase Auth
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -31,21 +41,11 @@ const AdminAuth = () => {
 
       if (signInError) throw signInError;
 
-      // Then check if user is admin
-      const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('is_admin', { user_id: signInData.user.id });
-
-      if (adminCheckError) throw adminCheckError;
-
-      if (!isAdmin) {
-        throw new Error("Access denied. You are not authorized as an admin.");
-      }
-
       toast.success("Welcome back, admin!");
       navigate("/admin");
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
       console.error("Admin auth error:", error);
+      toast.error(error.message || "Failed to sign in");
     } finally {
       setIsLoading(false);
     }
