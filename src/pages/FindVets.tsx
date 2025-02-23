@@ -1,11 +1,12 @@
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Star, MapPin, Video, MessageSquare, Calendar, Circle, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { VetWithAvailability } from "@/types/vet";
 import { useQuery } from "@tanstack/react-query";
@@ -42,7 +43,7 @@ const ConsultationDetails = ({
         className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
       >
         <Video className="w-4 h-4 mr-2" />
-        Book Video Call
+        Start Video Call
       </Button>
       <Button 
         disabled={isLoading}
@@ -51,54 +52,15 @@ const ConsultationDetails = ({
         className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
       >
         <MessageSquare className="w-4 h-4 mr-2" />
-        Book Chat
+        Start Chat
       </Button>
     </div>
   </div>
 );
 
 const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [isBooked, setIsBooked] = useState(false);
   const [showConsultation, setShowConsultation] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
-
-  const handleBook = async (sessionType: 'video' | 'chat') => {
-    if (!selectedSlot) return;
-
-    setIsBooking(true);
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) {
-        toast.error("Please log in to book an appointment");
-        return;
-      }
-
-      const appointmentTime = new Date();
-      const [hours, minutes] = selectedSlot.split(':');
-      appointmentTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-      const { error } = await supabase
-        .from('appointments')
-        .insert({
-          vet_id: vet.id,
-          user_id: user.id,
-          appointment_time: appointmentTime.toISOString(),
-          amount: vet.consultation_fee,
-          session_type: sessionType,
-        });
-
-      if (error) throw error;
-
-      setIsBooked(true);
-      toast.success("Appointment booked successfully!");
-    } catch (error) {
-      console.error('Booking error:', error);
-      toast.error("Failed to book appointment. Please try again.");
-    } finally {
-      setIsBooking(false);
-    }
-  };
 
   const handleStartConsultation = async (sessionType: 'video' | 'chat') => {
     setShowConsultation(true);
@@ -109,20 +71,34 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
         return;
       }
 
-      const { error } = await supabase
-        .from('appointments')
+      // Create a consultation session
+      const { data: session, error: sessionError } = await supabase
+        .from('consultation_sessions')
         .insert({
-          vet_id: vet.id,
           user_id: user.id,
-          appointment_time: new Date().toISOString(),
-          amount: vet.consultation_fee,
-          session_type: sessionType,
-          status: 'confirmed',
+          vet_id: vet.id,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Add initial message
+      const { error: messageError } = await supabase
+        .from('consultation_messages')
+        .insert({
+          session_id: session.id,
+          sender_id: user.id,
+          message_type: 'text',
+          content: `Started ${sessionType} consultation`,
         });
 
-      if (error) throw error;
+      if (messageError) throw messageError;
       
       toast.success(`Starting ${sessionType} consultation...`);
+      // Here you would typically navigate to a consultation room component
+      // We'll implement that in the next step
     } catch (error) {
       console.error('Consultation error:', error);
       toast.error("Failed to start consultation. Please try again.");
@@ -187,104 +163,54 @@ const VetCard = ({ vet }: { vet: VetWithAvailability }) => {
           </div>
         </div>
 
-        {!isBooked ? (
-          <div className="mt-4">
-            {vet.availability.is_online ? (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button 
-                    className="w-full bg-petsu-blue hover:bg-petsu-blue/90 text-white"
-                  >
-                    View Details & Book Now
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Start Consultation</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-4">
-                    <div className="space-y-4">
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold mb-2">Consultation Fee</h3>
-                        <p className="text-2xl font-bold text-petsu-blue">${vet.consultation_fee}</p>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button 
-                          className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-                          onClick={() => handleStartConsultation('video')}
-                        >
-                          <Video className="w-4 h-4 mr-2" />
-                          Start Video Call
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
-                          onClick={() => handleStartConsultation('chat')}
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Start Chat
-                        </Button>
-                      </div>
-                    </div>
+        {vet.availability.is_online ? (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                className="w-full mt-4 bg-petsu-blue hover:bg-petsu-blue/90 text-white"
+              >
+                Start Instant Consultation
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Start Consultation</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-semibold mb-2">Consultation Fee</h3>
+                    <p className="text-2xl font-bold text-petsu-blue">${vet.consultation_fee}</p>
                   </div>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <>
-                <div className="flex items-center gap-2 mb-3 mt-4">
-                  <Calendar className="w-4 h-4 text-petsu-blue" />
-                  <span className="font-medium text-petsu-blue">Available Slots</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  {vet.availability.available_slots.map((slot) => (
-                    <Button
-                      key={slot}
-                      variant="outline"
-                      className={`${
-                        selectedSlot === slot
-                          ? "bg-petsu-yellow text-petsu-blue border-petsu-blue"
-                          : "hover:bg-petsu-yellow/10"
-                      }`}
-                      onClick={() => setSelectedSlot(slot)}
+                  <div className="flex gap-3">
+                    <Button 
+                      className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
+                      onClick={() => handleStartConsultation('video')}
                     >
-                      {slot}
+                      <Video className="w-4 h-4 mr-2" />
+                      Start Video Call
                     </Button>
-                  ))}
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
+                      onClick={() => handleStartConsultation('chat')}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Start Chat
+                    </Button>
+                  </div>
                 </div>
-                {selectedSlot && (
-                  <ConsultationDetails
-                    selectedSlot={selectedSlot}
-                    consultationFee={vet.consultation_fee}
-                    onConfirm={handleBook}
-                    isLoading={isBooking}
-                  />
-                )}
-              </>
-            )}
-          </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         ) : (
-          <div className="mt-6">
-            <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-green-700 font-medium">
-                Appointment booked for {selectedSlot}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button 
-                className="flex-1 bg-petsu-yellow hover:bg-petsu-yellow/90 text-petsu-blue"
-              >
-                <Video className="w-4 h-4 mr-2" />
-                Join Call
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1 border-petsu-blue text-petsu-blue hover:bg-petsu-yellow/10"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Chat
-              </Button>
-            </div>
-          </div>
+          <Button
+            variant="outline"
+            className="w-full mt-4 border-gray-300 text-gray-500"
+            disabled
+          >
+            Currently Offline
+          </Button>
         )}
       </div>
     </motion.div>
