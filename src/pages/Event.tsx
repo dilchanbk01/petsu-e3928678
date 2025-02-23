@@ -19,24 +19,39 @@ const EventPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [showQuantity, setShowQuantity] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, we'll get the event from localStorage
-    const savedEvents = localStorage.getItem('events');
-    if (savedEvents) {
-      const events = JSON.parse(savedEvents);
-      const foundEvent = events.find((e: Event) => e.id === id);
-      if (foundEvent) {
-        setEvent(foundEvent);
-      } else {
-        navigate('/events');
-      }
-    }
-  }, [id, navigate]);
+    const fetchEvent = async () => {
+      try {
+        const { data: eventData, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-  if (!event) {
-    return null;
-  }
+        if (error) throw error;
+        if (!eventData) {
+          navigate('/events');
+          return;
+        }
+
+        setEvent(eventData);
+      } catch (error) {
+        console.error('Error fetching event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load event details",
+          variant: "destructive"
+        });
+        navigate('/events');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id, navigate, toast]);
 
   const handleRegister = async () => {
     if (!session?.user) {
@@ -53,7 +68,7 @@ const EventPage = () => {
       const { error } = await supabase
         .from('event_registrations')
         .insert({
-          event_id: event.id,
+          event_id: event!.id,
           user_id: session.user.id,
           quantity: quantity,
           status: 'confirmed'
@@ -62,6 +77,18 @@ const EventPage = () => {
       if (error) throw error;
 
       setShowConfirmation(true);
+      
+      // Refresh event data to get updated ticket count
+      const { data: updatedEvent } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (updatedEvent) {
+        setEvent(updatedEvent);
+      }
+
     } catch (error) {
       console.error('Error booking tickets:', error);
       toast({
@@ -75,12 +102,28 @@ const EventPage = () => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: event.title,
-        text: event.description,
+        title: event!.title,
+        text: event!.description,
         url: window.location.href,
       });
     }
   };
+
+  const handleLocationClick = () => {
+    if (event?.latitude && event?.longitude) {
+      window.open(`https://www.google.com/maps?q=${event.latitude},${event.longitude}`, '_blank');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-petsu-blue"></div>
+      </div>
+    );
+  }
+
+  if (!event) return null;
 
   const maxTickets = Math.min(event.availableTickets || 5, 5);
 
@@ -116,10 +159,13 @@ const EventPage = () => {
                 <Clock className="w-5 h-5 mr-2" />
                 <span>{event.time}</span>
               </div>
-              <div className="flex items-center">
+              <button
+                onClick={handleLocationClick}
+                className="flex items-center hover:text-white/80 transition-colors"
+              >
                 <MapPin className="w-5 h-5 mr-2" />
                 <span>{event.location}</span>
-              </div>
+              </button>
             </div>
           </div>
         </div>
