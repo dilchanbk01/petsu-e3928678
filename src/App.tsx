@@ -11,6 +11,7 @@ import CreateEvent from "@/pages/CreateEvent"
 import VetDashboard from "@/pages/VetDashboard"
 import VetOnboarding from "@/pages/VetOnboarding"
 import Auth from "@/pages/Auth"
+import VetAuth from "@/pages/VetAuth"
 import AdminAuth from "@/pages/AdminAuth"
 import AdminDashboard from "@/pages/AdminDashboard"
 import NotFound from "@/pages/NotFound"
@@ -39,6 +40,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
+const VetRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!session) {
+    return <Navigate to="/vet-auth" />;
+  }
+
+  return children;
+};
+
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
   
@@ -55,43 +70,24 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/auth" element={<Auth />} />
-    <Route path="/admin-auth" element={<AdminAuth />} />
-    <Route
-      path="/admin"
-      element={
-        <AdminRoute>
-          <AdminDashboard />
-        </AdminRoute>
-      }
-    />
-    {/* Public routes that don't require authentication */}
+    {/* Public routes */}
     <Route path="/" element={<Index />} />
     <Route path="/find-vets" element={<FindVets />} />
+    <Route path="/pet-essentials" element={<PetEssentials />} />
+    <Route path="/events" element={<Events />} />
     <Route path="/vet-onboarding" element={<VetOnboarding />} />
     
-    {/* Protected routes that require authentication */}
+    {/* Auth routes */}
+    <Route path="/auth" element={<Auth />} />
+    <Route path="/vet-auth" element={<VetAuth />} />
+    <Route path="/admin-auth" element={<AdminAuth />} />
+
+    {/* Protected user routes */}
     <Route
       path="/profile"
       element={
         <ProtectedRoute>
           <Profile />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/events"
-      element={
-        <ProtectedRoute>
-          <Events />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/pet-essentials"
-      element={
-        <ProtectedRoute>
-          <PetEssentials />
         </ProtectedRoute>
       }
     />
@@ -103,14 +99,27 @@ const AppRoutes = () => (
         </ProtectedRoute>
       }
     />
+
+    {/* Protected vet routes */}
     <Route
       path="/vet-dashboard"
       element={
-        <ProtectedRoute>
+        <VetRoute>
           <VetDashboard />
-        </ProtectedRoute>
+        </VetRoute>
       }
     />
+
+    {/* Protected admin routes */}
+    <Route
+      path="/admin"
+      element={
+        <AdminRoute>
+          <AdminDashboard />
+        </AdminRoute>
+      }
+    />
+    
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
