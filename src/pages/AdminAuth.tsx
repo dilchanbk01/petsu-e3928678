@@ -22,6 +22,26 @@ const AdminAuth = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {};
+    
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
+      newErrors.email = "Invalid email address";
+    }
+    
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -29,12 +49,24 @@ const AdminAuth = () => {
       ...prev,
       [id]: value,
     }));
+    // Clear error when user starts typing
+    if (errors[id as keyof FormData]) {
+      setErrors((prev) => ({
+        ...prev,
+        [id]: undefined,
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (isLoading) return;
+    
+    if (!validateForm()) {
+      toast.error("Please fix the form errors");
+      return;
+    }
     
     setIsLoading(true);
 
@@ -73,6 +105,8 @@ const AdminAuth = () => {
     } catch (error) {
       console.error("Admin auth error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to sign in");
+      // Reset password field on error
+      setFormData(prev => ({ ...prev, password: "" }));
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +121,10 @@ const AdminAuth = () => {
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
-          <img 
+          <motion.img 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
             src="/lovable-uploads/1a656558-105f-41b6-b91a-c324a03f1217.png"
             alt="Petsu"
             className="w-48 mx-auto mb-6"
@@ -108,8 +145,15 @@ const AdminAuth = () => {
                 onChange={handleFormChange}
                 disabled={isLoading}
                 required
-                className="bg-white"
+                className={`bg-white ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
               />
+              {errors.email && (
+                <p id="email-error" className="text-sm text-red-500 mt-1">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -123,8 +167,10 @@ const AdminAuth = () => {
                   onChange={handleFormChange}
                   disabled={isLoading}
                   required
-                  className="bg-white pr-10"
+                  className={`bg-white pr-10 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
                   minLength={6}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
                 />
                 <Button
                   type="button"
@@ -140,12 +186,17 @@ const AdminAuth = () => {
                     <Eye className="h-4 w-4" />
                   )}
                 </Button>
+                {errors.password && (
+                  <p id="password-error" className="text-sm text-red-500 mt-1">
+                    {errors.password}
+                  </p>
+                )}
               </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-petsu-blue hover:bg-petsu-blue/90"
+              className="w-full bg-petsu-blue hover:bg-petsu-blue/90 transition-colors"
               disabled={isLoading}
             >
               {isLoading ? (
