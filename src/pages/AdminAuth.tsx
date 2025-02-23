@@ -9,17 +9,33 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
 const AdminAuth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (isLoading) return;
+    
     setIsLoading(true);
 
     try {
@@ -30,8 +46,13 @@ const AdminAuth = () => {
           password: formData.password
         });
 
-      if (verifyError) throw verifyError;
-      if (!isValidAdmin) throw new Error("Invalid admin credentials");
+      if (verifyError) {
+        throw new Error(verifyError.message || "Failed to verify admin credentials");
+      }
+
+      if (!isValidAdmin) {
+        throw new Error("Invalid admin credentials");
+      }
 
       // Then sign in with Supabase Auth
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -39,13 +60,19 @@ const AdminAuth = () => {
         password: formData.password,
       });
 
-      if (signInError) throw signInError;
+      if (signInError) {
+        throw new Error(signInError.message);
+      }
+
+      if (!signInData.user) {
+        throw new Error("No user data returned after sign in");
+      }
 
       toast.success("Welcome back, admin!");
       navigate("/admin");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Admin auth error:", error);
-      toast.error(error.message || "Failed to sign in");
+      toast.error(error instanceof Error ? error.message : "Failed to sign in");
     } finally {
       setIsLoading(false);
     }
@@ -56,6 +83,7 @@ const AdminAuth = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
@@ -77,10 +105,10 @@ const AdminAuth = () => {
                 type="email"
                 placeholder="admin@example.com"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={handleFormChange}
+                disabled={isLoading}
                 required
+                className="bg-white"
               />
             </div>
 
@@ -92,10 +120,11 @@ const AdminAuth = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={handleFormChange}
+                  disabled={isLoading}
                   required
+                  className="bg-white pr-10"
+                  minLength={6}
                 />
                 <Button
                   type="button"
@@ -103,6 +132,7 @@ const AdminAuth = () => {
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -119,7 +149,10 @@ const AdminAuth = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Signing in...
+                </>
               ) : (
                 "Sign In as Admin"
               )}
@@ -127,13 +160,15 @@ const AdminAuth = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => navigate("/auth")}
               className="text-sm text-petsu-blue hover:underline"
+              disabled={isLoading}
             >
               Return to Regular Login
-            </button>
+            </Button>
           </div>
         </div>
       </motion.div>
