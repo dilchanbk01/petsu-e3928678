@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -70,43 +71,45 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First verify admin credentials using RPC
-      const { data: isAdminValid, error: verifyError } = await supabase
-        .rpc('verify_admin_password', {
-          email: formData.email,
-          password: formData.password
-        });
-
-      if (verifyError) {
-        throw new Error(verifyError.message || "Failed to verify admin credentials");
-      }
-
-      if (!isAdminValid) {
-        throw new Error("Invalid admin credentials");
-      }
-
-      // Then sign in with Supabase Auth
+      // First try to sign in with Supabase Auth
       const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (signInError) {
-        throw signInError;
+        throw new Error(signInError.message);
       }
 
       if (!user) {
         throw new Error("No user data returned after sign in");
       }
 
+      // Then verify if the user is an admin
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('is_admin', { user_id: user.id });
+
+      if (adminCheckError) {
+        // Sign out the user if they're not an admin
+        await supabase.auth.signOut();
+        throw new Error("Failed to verify admin status");
+      }
+
+      if (!isAdmin) {
+        // Sign out the user if they're not an admin
+        await supabase.auth.signOut();
+        throw new Error("Unauthorized: Admin access required");
+      }
+
       toast.success("Welcome back, admin!");
       navigate("/admin");
     } catch (error: any) {
       console.error("Admin auth error:", error);
-      setIsLoading(false); // Make sure to reset loading state on error
       toast.error(error.message || "Failed to sign in");
       // Reset password field on error
       setFormData(prev => ({ ...prev, password: "" }));
+    } finally {
+      setIsLoading(false); // Always reset loading state
     }
   };
 
