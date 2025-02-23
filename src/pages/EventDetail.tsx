@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -145,9 +144,9 @@ const EventDetail = () => {
             alt={event.title}
             className="w-full h-full object-cover"
           />
-          {event.availableTickets !== undefined && event.availableTickets <= 10 && (
+          {event.available_tickets !== undefined && event.available_tickets <= 10 && (
             <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full">
-              Only {event.availableTickets} tickets left!
+              Only {event.available_tickets} tickets left!
             </div>
           )}
         </div>
@@ -177,7 +176,7 @@ const EventDetail = () => {
               <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2 text-petsu-blue" />
                 <span className="text-gray-600">
-                  {event.availableTickets} spots available
+                  {event.available_tickets} spots available
                 </span>
               </div>
               <div className="flex gap-4">
@@ -203,7 +202,7 @@ const EventDetail = () => {
                 <Button 
                   className="bg-petsu-blue hover:bg-petsu-blue/90"
                   onClick={handleBooking}
-                  disabled={!event.availableTickets || event.availableTickets <= 0 || isLoading}
+                  disabled={!event.available_tickets || event.available_tickets <= 0 || isLoading}
                 >
                   <Ticket className="w-4 h-4 mr-2" />
                   {isLoading ? "Booking..." : "Book Now"}
@@ -218,4 +217,3 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
-
