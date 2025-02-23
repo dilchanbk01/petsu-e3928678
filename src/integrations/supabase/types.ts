@@ -193,45 +193,6 @@ export type Database = {
         }
         Relationships: []
       }
-      event_bookings: {
-        Row: {
-          created_at: string
-          event_id: string | null
-          id: string
-          quantity: number
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          event_id?: string | null
-          id?: string
-          quantity?: number
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          event_id?: string | null
-          id?: string
-          quantity?: number
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_bookings_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "event_insights"
-            referencedColumns: ["event_id"]
-          },
-          {
-            foreignKeyName: "event_bookings_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       event_registrations: {
         Row: {
           created_at: string
@@ -730,13 +691,6 @@ export type Database = {
           new_status: string
         }
         Returns: undefined
-      }
-      verify_admin_credentials: {
-        Args: {
-          email: string
-          password: string
-        }
-        Returns: string
       }
       verify_admin_password: {
         Args: {

@@ -23,29 +23,31 @@ const AdminAuth = () => {
     setIsLoading(true);
 
     try {
-      // First verify admin credentials using our new secure function
-      const { data: adminId, error: verifyError } = await supabase
-        .rpc('verify_admin_credentials', {
-          email: formData.email,
-          password: formData.password
-        });
-
-      if (verifyError) throw verifyError;
-      if (!adminId) throw new Error("Invalid credentials");
-
       // Sign in with Supabase Auth
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (signInError) throw signInError;
 
-      toast.success("Welcome back, admin!");
+      // Check if user has admin role
+      const { data: adminRole, error: adminRoleError } = await supabase
+        .from('admin_roles')
+        .select('role')
+        .eq('user_id', signInData.user.id)
+        .single();
+
+      if (adminRoleError || !adminRole) {
+        // If not an admin, sign out and show error
+        await supabase.auth.signOut();
+        throw new Error("Access denied. This portal is for administrators only.");
+      }
+
+      toast.success(`Welcome ${adminRole.role}!`);
       navigate("/admin");
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
-      console.error("Admin auth error:", error);
+      toast.error(error.message || "An error occurred");
     } finally {
       setIsLoading(false);
     }

@@ -1,8 +1,8 @@
 
 import { motion } from "framer-motion";
 import { Calendar, MapPin } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Event } from "@/types/event";
+import { useNavigate } from "react-router-dom";
 
 interface EventCardProps {
   event: Event;
@@ -11,10 +11,6 @@ interface EventCardProps {
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate(`/events/${event.id}`);
-  };
-
   return (
     <motion.div 
       className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg cursor-pointer"
@@ -22,7 +18,7 @@ const EventCard = ({ event }: EventCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
-      onClick={handleClick}
+      onClick={() => navigate(`/events/${event.id}`)}
     >
       <div className="relative">
         <img 
@@ -30,9 +26,9 @@ const EventCard = ({ event }: EventCardProps) => {
           alt={event.title} 
           className="w-full h-48 object-cover"
         />
-        {event.available_tickets !== undefined && event.available_tickets <= 10 && (
+        {event.availableTickets !== undefined && event.availableTickets <= 10 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
-            Only {event.available_tickets} tickets left!
+            Only {event.availableTickets} tickets left!
           </div>
         )}
       </div>
