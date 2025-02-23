@@ -292,25 +292,69 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          email: string | null
           full_name: string | null
           id: string
+          phone: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_activities: {
+        Row: {
+          activity_date: string
+          activity_id: string
+          activity_type: string
+          details: Json | null
+          id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_date?: string
+          activity_id: string
+          activity_type: string
+          details?: Json | null
+          id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_date?: string
+          activity_id?: string
+          activity_type?: string
+          details?: Json | null
+          id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vet_availability: {
         Row: {
