@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -67,12 +66,12 @@ const AdminAuth = () => {
       toast.error("Please fix the form errors");
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      // First verify admin credentials
-      const { data: isValidAdmin, error: verifyError } = await supabase
+      // First verify admin credentials using RPC
+      const { data: isAdminValid, error: verifyError } = await supabase
         .rpc('verify_admin_password', {
           email: formData.email,
           password: formData.password
@@ -82,33 +81,32 @@ const AdminAuth = () => {
         throw new Error(verifyError.message || "Failed to verify admin credentials");
       }
 
-      if (!isValidAdmin) {
+      if (!isAdminValid) {
         throw new Error("Invalid admin credentials");
       }
 
       // Then sign in with Supabase Auth
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (signInError) {
-        throw new Error(signInError.message);
+        throw signInError;
       }
 
-      if (!signInData.user) {
+      if (!user) {
         throw new Error("No user data returned after sign in");
       }
 
       toast.success("Welcome back, admin!");
       navigate("/admin");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Admin auth error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to sign in");
+      setIsLoading(false); // Make sure to reset loading state on error
+      toast.error(error.message || "Failed to sign in");
       // Reset password field on error
       setFormData(prev => ({ ...prev, password: "" }));
-    } finally {
-      setIsLoading(false);
     }
   };
 
