@@ -11,6 +11,7 @@ import ConsultationRoom from "@/components/ConsultationRoom";
 import VetProfile from "@/components/vet-dashboard/VetProfile";
 import ConsultationRequestCard from "@/components/vet-dashboard/ConsultationRequestCard";
 import AppointmentsList from "@/components/vet-dashboard/AppointmentsList";
+import VetInsights from "@/components/vet-dashboard/VetInsights";
 
 const VetDashboard = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all');
@@ -50,6 +51,52 @@ const VetDashboard = () => {
 
       if (error) throw error;
       return data;
+    },
+    enabled: !!vetDetails?.id
+  });
+
+  const { data: insights = null, isLoading: isLoadingInsights } = useQuery({
+    queryKey: ['vet-insights', vetDetails?.id],
+    queryFn: async () => {
+      if (!vetDetails?.id) return null;
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('vet_id', vetDetails.id)
+        .eq('status', 'completed')
+        .gte('appointment_time', thirtyDaysAgo.toISOString());
+
+      if (error) throw error;
+
+      const totalEarnings = data.reduce((sum, app) => sum + app.amount, 0);
+      const completedCount = data.length;
+
+      // Group by day
+      const byDay = data.reduce((acc, app) => {
+        const date = new Date(app.appointment_time).toLocaleDateString();
+        acc[date] = (acc[date] || 0) + app.amount;
+        return acc;
+      }, {});
+
+      // Group by week
+      const byWeek = data.reduce((acc, app) => {
+        const date = new Date(app.appointment_time);
+        const week = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
+        acc[week] = (acc[week] || 0) + app.amount;
+        return acc;
+      }, {});
+
+      return {
+        totalEarnings,
+        completedCount,
+        byDay,
+        byWeek,
+        recentCompletions: data.slice(-5)
+      };
     },
     enabled: !!vetDetails?.id
   });
@@ -148,6 +195,10 @@ const VetDashboard = () => {
       </div>
 
       {vetDetails && <VetProfile vetDetails={vetDetails} />}
+
+      {insights && !isLoadingInsights && (
+        <VetInsights insights={insights} className="mb-8" />
+      )}
 
       {consultationRequests.length > 0 && (
         <div className="mb-8">
