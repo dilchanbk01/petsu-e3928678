@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@radix-ui/react-dialog";
+import { Ticket } from "lucide-react";
 
 interface Event {
   id: string;
@@ -244,68 +246,100 @@ const EventCard = ({ event, onRegister }: { event: Event; onRegister: (event: Ev
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="relative">
-        <img 
-          src={event.imageUrl} 
-          alt={event.title} 
-          className="w-full h-48 object-cover"
-        />
-        {event.availableTickets !== undefined && event.availableTickets <= 10 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
-            Only {event.availableTickets} tickets left!
-          </div>
-        )}
-      </div>
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-petsu-blue mb-2">{event.title}</h3>
-        <div className="flex items-center text-petsu-blue mb-2">
-          <Calendar className="w-4 h-4 mr-2" />
-          <span className="text-sm">{event.date} at {event.time}</span>
-        </div>
-        <div className="flex items-center text-petsu-blue mb-4">
-          <MapPin className="w-4 h-4 mr-2" />
-          <span className="text-sm">{event.location}</span>
-        </div>
-        <p className="text-petsu-blue mb-4 text-sm">{event.description}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-petsu-blue font-bold">
-            {event.price === 0 ? "Free" : `₹${event.price}`}
-          </span>
-          {!showQuantity ? (
-            <button 
-              className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-              onClick={() => setShowQuantity(true)}
-              disabled={event.availableTickets === 0}
-            >
-              {event.availableTickets === 0 ? "Sold Out" : "Register Now"}
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
-              >
-                {Array.from({ length: maxTickets }, (_, i) => i + 1).map((num) => (
-                  <option key={num} value={num}>
-                    {num} {num === 1 ? "ticket" : "tickets"}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => {
-                  onRegister(event, quantity);
-                  setShowQuantity(false);
-                  setQuantity(1);
-                }}
-                className="bg-petsu-blue text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Add to Cart
-              </button>
+      <Dialog>
+        <DialogTrigger asChild>
+          <div className="cursor-pointer">
+            <div className="relative">
+              <img 
+                src={event.imageUrl} 
+                alt={event.title} 
+                className="w-full h-48 object-cover"
+              />
+              {event.availableTickets !== undefined && event.availableTickets <= 10 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                  Only {event.availableTickets} tickets left!
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-petsu-blue mb-2">{event.title}</h3>
+              <div className="flex items-center text-petsu-blue mb-2">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span className="text-sm">{event.date} at {event.time}</span>
+              </div>
+              <div className="flex items-center text-petsu-blue mb-4">
+                <MapPin className="w-4 h-4 mr-2" />
+                <span className="text-sm">{event.location}</span>
+              </div>
+            </div>
+          </div>
+        </DialogTrigger>
+        <DialogContent className="bg-white max-w-2xl w-[90vw]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-petsu-blue">{event.title}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <img 
+              src={event.imageUrl} 
+              alt={event.title} 
+              className="w-full h-64 object-cover rounded-lg mb-4"
+            />
+            <div className="space-y-4">
+              <p className="text-petsu-blue">{event.description}</p>
+              <div className="flex items-center text-petsu-blue">
+                <Calendar className="w-5 h-5 mr-2" />
+                <span>{event.date} at {event.time}</span>
+              </div>
+              <div className="flex items-center text-petsu-blue">
+                <MapPin className="w-5 h-5 mr-2" />
+                <span>{event.location}</span>
+              </div>
+              <div className="flex items-center text-petsu-blue">
+                <Ticket className="w-5 h-5 mr-2" />
+                <span>{event.availableTickets} tickets available</span>
+              </div>
+              <div className="flex justify-between items-center mt-6">
+                <span className="text-xl font-bold text-petsu-blue">
+                  {event.price === 0 ? "Free" : `₹${event.price}`}
+                </span>
+                {!showQuantity ? (
+                  <Button 
+                    className="bg-petsu-blue text-white hover:bg-petsu-blue/90"
+                    onClick={() => setShowQuantity(true)}
+                    disabled={event.availableTickets === 0}
+                  >
+                    {event.availableTickets === 0 ? "Sold Out" : "Register Now"}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      className="bg-white text-petsu-blue border-2 border-petsu-blue rounded px-2 py-1"
+                    >
+                      {Array.from({ length: maxTickets }, (_, i) => i + 1).map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? "ticket" : "tickets"}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      onClick={() => {
+                        onRegister(event, quantity);
+                        setShowQuantity(false);
+                        setQuantity(1);
+                      }}
+                      className="bg-petsu-blue text-white hover:bg-petsu-blue/90"
+                    >
+                      Add to Cart
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

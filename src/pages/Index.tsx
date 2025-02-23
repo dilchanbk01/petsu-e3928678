@@ -9,13 +9,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 const NavCard = lazy(() => import("@/components/NavCard"));
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
-  const userName = "John Doe"; // This could be fetched from your auth state
+  const { session } = useAuth();
+  const [userName, setUserName] = useState("Loading...");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!session?.user?.id) return;
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      setUserName(profile?.full_name || session.user.email || "User");
+    };
+
+    fetchProfile();
+  }, [session]);
 
   return (
     <div className="absolute top-6 right-6">
@@ -40,9 +64,11 @@ const ProfileMenu = () => {
               Profile Settings
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
-            My Tickets
-          </DropdownMenuItem>
+          <Link to="/events">
+            <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
+              My Tickets
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem className="rounded-lg hover:bg-petsu-yellow/20 cursor-pointer py-3 px-4 text-petsu-blue font-medium">
             Sign Out
           </DropdownMenuItem>
