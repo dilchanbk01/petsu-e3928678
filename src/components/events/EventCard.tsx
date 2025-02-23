@@ -11,6 +11,11 @@ interface EventCardProps {
 const EventCard = ({ event }: EventCardProps) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    console.log('Navigating to event:', event.id); // Debug log
+    navigate(`/events/${event.id}`);
+  };
+
   return (
     <motion.div 
       className="bg-petsu-yellow rounded-xl overflow-hidden shadow-lg cursor-pointer"
@@ -18,7 +23,7 @@ const EventCard = ({ event }: EventCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={handleClick}
     >
       <div className="relative">
         <img 
