@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       admin_credentials: {
         Row: {
+          allow_multiple_sessions: boolean | null
           created_at: string
           email: string
           id: string
@@ -18,6 +19,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_multiple_sessions?: boolean | null
           created_at?: string
           email: string
           id: string
@@ -25,6 +27,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_multiple_sessions?: boolean | null
           created_at?: string
           email?: string
           id?: string
@@ -100,6 +103,71 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      consultation_messages: {
+        Row: {
+          consultation_id: string
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          sender_id: string
+        }
+        Insert: {
+          consultation_id: string
+          content: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          sender_id: string
+        }
+        Update: {
+          consultation_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultation_messages_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consultation_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          session_type: string
+          status: string
+          user_id: string
+          vet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          session_type?: string
+          status?: string
+          user_id: string
+          vet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          session_type?: string
+          status?: string
+          user_id?: string
+          vet_id?: string
+        }
+        Relationships: []
       }
       dynamic_content: {
         Row: {

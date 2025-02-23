@@ -40,3 +40,13 @@ export interface Appointment {
   session_type: 'video' | 'chat';
   amount: number;
 }
+
+export interface ConsultationRequest {
+  id: string;
+  user_id: string;
+  vet_id: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  created_at: string;
+  amount: number;
+  session_type: 'chat' | 'video';
+}

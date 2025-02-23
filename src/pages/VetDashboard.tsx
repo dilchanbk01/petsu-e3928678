@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, User, Video, MessageSquare, Check, X, ToggleRight, ToggleLeft } from "lucide-react";
+import { Calendar, Clock, User, Video, MessageSquare, Check, X, ToggleRight, ToggleLeft, MapPin, Globe, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Appointment } from "@/types/vet";
+import { Appointment, ConsultationRequest, Vet } from "@/types/vet";
 import { useQuery } from "@tanstack/react-query";
+import ConsultationRoom from "@/components/ConsultationRoom";
 
 const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -110,7 +110,29 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
 
 const VetDashboard = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all');
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [vetDetails, setVetDetails] = useState<Vet | null>(null);
+  const [selectedConsultation, setSelectedConsultation] = useState<string | null>(null);
+  const [consultationRequests, setConsultationRequests] = useState<ConsultationRequest[]>([]);
+
+  const fetchVetDetails = async () => {
+    const { data: vetData, error } = await supabase
+      .from('vets')
+      .select('*')
+      .single();
+
+    if (error) {
+      toast.error("Failed to load vet details");
+      return;
+    }
+
+    setVetDetails(vetData);
+    return vetData;
+  };
+
+  useEffect(() => {
+    fetchVetDetails();
+  }, []);
 
   const fetchAppointments = async () => {
     const { data: vetData, error: vetError } = await supabase
@@ -139,48 +161,16 @@ const VetDashboard = () => {
     filter === 'all' ? true : appointment.status === filter
   );
 
-  useEffect(() => {
-    // Fetch initial online status
-    const fetchOnlineStatus = async () => {
-      const { data: vetData } = await supabase
-        .from('vets')
-        .select('id')
-        .single();
-
-      if (vetData) {
-        const { data: availabilityData } = await supabase
-          .from('vet_availability')
-          .select('is_online')
-          .eq('vet_id', vetData.id)
-          .single();
-
-        if (availabilityData) {
-          setIsOnline(availabilityData.is_online);
-        }
-      }
-    };
-
-    fetchOnlineStatus();
-  }, []);
-
   const toggleOnlineStatus = async () => {
     try {
-      const { data: vetData } = await supabase
-        .from('vets')
-        .select('id')
-        .single();
-
-      if (!vetData) {
-        toast.error("Vet profile not found");
-        return;
-      }
+      if (!vetDetails) return;
 
       const newStatus = !isOnline;
 
       const { error } = await supabase
         .from('vet_availability')
         .upsert({
-          vet_id: vetData.id,
+          vet_id: vetDetails.id,
           is_online: newStatus,
           last_seen_at: new Date().toISOString()
         });
@@ -195,13 +185,36 @@ const VetDashboard = () => {
     }
   };
 
+  const handleConsultationRequest = async (requestId: string, action: 'approved' | 'rejected') => {
+    try {
+      const { error } = await supabase
+        .from('consultation_requests')
+        .update({ status: action })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      if (action === 'approved') {
+        setSelectedConsultation(requestId);
+      }
+
+      toast.success(`Consultation request ${action}`);
+    } catch (error) {
+      console.error('Error handling consultation request:', error);
+      toast.error("Failed to update consultation request");
+    }
+  };
+
   useEffect(() => {
-    const channel = supabase.channel('appointments')
+    const channel = supabase.channel('dashboard')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'appointments' },
+        { event: '*', schema: 'public', table: 'consultation_requests' },
         (payload) => {
-          console.log('Appointment update:', payload);
+          if (payload.eventType === 'INSERT') {
+            toast.info("New consultation request received!");
+            setConsultationRequests(prev => [...prev, payload.new as ConsultationRequest]);
+          }
         }
       )
       .subscribe();
@@ -237,6 +250,72 @@ const VetDashboard = () => {
         </Button>
       </div>
 
+      {vetDetails && (
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <div className="flex items-start gap-6">
+            <img
+              src={vetDetails.image_url || '/placeholder.svg'}
+              alt={vetDetails.name}
+              className="w-24 h-24 rounded-full object-cover"
+            />
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-2">{vetDetails.name}</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-petsu-blue" />
+                  <span>{vetDetails.specialty}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-petsu-blue" />
+                  <span>{vetDetails.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-petsu-blue" />
+                  <span>{vetDetails.experience}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-petsu-blue" />
+                  <span>{vetDetails.languages.join(', ')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {consultationRequests.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-4">Pending Consultation Requests</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {consultationRequests.map((request) => (
+              <div key={request.id} className="bg-white rounded-xl shadow-md p-6">
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium">Patient ID: {request.user_id.slice(0, 8)}</span>
+                  <span className="text-petsu-blue font-bold">${request.amount}</span>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    onClick={() => handleConsultationRequest(request.id, 'approved')}
+                    className="flex-1 bg-green-500 hover:bg-green-600"
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    Accept
+                  </Button>
+                  <Button
+                    onClick={() => handleConsultationRequest(request.id, 'rejected')}
+                    variant="outline"
+                    className="flex-1 border-red-500 text-red-500 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
         {(['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const).map((status) => (
           <Button
@@ -266,6 +345,15 @@ const VetDashboard = () => {
             <AppointmentCard key={appointment.id} appointment={appointment} />
           ))}
         </div>
+      )}
+
+      {selectedConsultation && (
+        <ConsultationRoom
+          sessionId={selectedConsultation}
+          userId={vetDetails?.id || ''}
+          vetId={vetDetails?.id || ''}
+          onClose={() => setSelectedConsultation(null)}
+        />
       )}
     </div>
   );
