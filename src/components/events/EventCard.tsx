@@ -30,9 +30,9 @@ const EventCard = ({ event }: EventCardProps) => {
           alt={event.title} 
           className="w-full h-48 object-cover"
         />
-        {event.available_tickets !== undefined && event.available_tickets <= 10 && (
+        {event.availableTickets !== undefined && event.availableTickets <= 10 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
-            Only {event.available_tickets} tickets left!
+            Only {event.availableTickets} tickets left!
           </div>
         )}
       </div>
